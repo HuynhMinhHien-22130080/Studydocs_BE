@@ -20,6 +20,8 @@ public class FirebaseConfig {
     // Đọc đường dẫn đến file cấu hình Firebase từ file properties
     @Value("${firebase.config.path}")
     private String firebaseConfigPath;
+    @Value("${firebase.bucket-name}")
+    private String bucketName;
 
     /**
      * Khởi tạo FirebaseApp sử dụng thông tin cấu hình từ file service account JSON.
@@ -30,12 +32,14 @@ public class FirebaseConfig {
      */
     @Bean
     public FirebaseApp firebaseApp() throws IOException {
+        System.out.println(firebaseConfigPath);
         // Đọc file JSON chứa thông tin xác thực
         FileInputStream serviceAccount = new FileInputStream(firebaseConfigPath);
 
         // Cấu hình FirebaseOptions với thông tin xác thực
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .setStorageBucket(bucketName)
                 .build();
 
         // Khởi tạo FirebaseApp với FirebaseOptions đã cấu hình
