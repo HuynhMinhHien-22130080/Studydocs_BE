@@ -32,7 +32,6 @@ public class FirebaseConfig {
      */
     @Bean
     public FirebaseApp firebaseApp() throws IOException {
-        System.out.println(firebaseConfigPath);
         // Đọc file JSON chứa thông tin xác thực
         FileInputStream serviceAccount = new FileInputStream(firebaseConfigPath);
 
