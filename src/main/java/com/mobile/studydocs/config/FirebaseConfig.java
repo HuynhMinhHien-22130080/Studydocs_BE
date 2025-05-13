@@ -52,9 +52,9 @@ public class FirebaseConfig {
      * @return Storage instance từ Firebase Cloud Storage
      */
     @Bean
-    public Storage storage() {
+    public Storage storage(FirebaseApp firebaseApp) {
         // Khởi tạo và trả về Storage client
-        return StorageClient.getInstance().bucket().getStorage();
+        return StorageClient.getInstance(firebaseApp).bucket().getStorage();
     }
 
     /**
@@ -64,8 +64,8 @@ public class FirebaseConfig {
      * @return Firestore instance từ Firebase Firestore
      */
     @Bean
-    public Firestore firestore() {
+    public Firestore firestore(FirebaseApp firebaseApp) {
         // Khởi tạo và trả về Firestore client
-        return FirestoreClient.getFirestore();
+        return FirestoreClient.getFirestore(firebaseApp);
     }
 }
