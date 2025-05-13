@@ -1,24 +1,27 @@
 package com.mobile.studydocs.service;
 
-import com.mobile.studydocs.kafka.producer.DocViewedEventPublisher;
-import com.mobile.studydocs.model.event.DocumentViewedEvent;
+import com.mobile.studydocs.dao.DocumentDao;
+import com.mobile.studydocs.model.entity.DocumentEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class DocumentService {
 
-    private final DocViewedEventPublisher eventPublisher;
+    private final DocumentDao documentDao;
 
-    public DocumentService(DocViewedEventPublisher eventPublisher) {
-        this.eventPublisher = eventPublisher;
+    public DocumentService(DocumentDao documentDao) {
+        this.documentDao = documentDao;
     }
 
-    public void viewDocument(String userId, String documentId) {
-        // Gọi khi người dùng xem chi tiết tài liệu
-        DocumentViewedEvent event = new DocumentViewedEvent(userId, documentId, System.currentTimeMillis());
-        eventPublisher.publish(event);
-
-        // Các xử lý khác nếu cần
+    public Optional<DocumentEntity> getDocumentById(String documentId) {
+        try {
+            DocumentEntity doc = documentDao.findById(documentId);
+            return Optional.ofNullable(doc);
+        } catch (Exception e) {
+            // log lỗi nếu cần
+            return Optional.empty();
+        }
     }
 }
-
