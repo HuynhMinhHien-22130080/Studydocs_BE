@@ -1,6 +1,6 @@
 package com.mobile.studydocs.controller;
 
-import com.mobile.studydocs.model.entity.DocumentEntity;
+import com.mobile.studydocs.model.dto.DocumentDTO;
 import com.mobile.studydocs.service.DocumentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +16,13 @@ public class DocumentController {
     }
 
     /**
-     * GET /documents/{id}
-     * Trả về chi tiết Document, hoặc 404 nếu không tồn tại
+     * Xem chi tiết tài liệu theo ID
+     * @param documentId Mã tài liệu
+     * @return DocumentDTO nếu tồn tại, 404 nếu không
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<DocumentEntity> getDocument(@PathVariable String id) {
-        return documentService.getDocumentById(id)
+    @GetMapping("/detail/{documentId}")
+    public ResponseEntity<DocumentDTO> getDocumentDetail(@PathVariable String documentId) {
+        return documentService.getDocumentById(documentId)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
