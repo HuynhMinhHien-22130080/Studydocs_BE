@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Followers {
+public class Following {
     private String userId;
-    private boolean notifyOnNewPost;
+    private boolean notifyEnable;
 }
