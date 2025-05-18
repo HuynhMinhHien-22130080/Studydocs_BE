@@ -17,6 +17,11 @@ public class DocumentService {
         this.documentDao = documentDao;
     }
 
+    /**
+     * Lấy thông tin chi tiết tài liệu theo ID và chuyển thành DTO
+     * @param documentId ID của tài liệu cần lấy
+     * @return Optional chứa DocumentDTO nếu tồn tại, hoặc empty nếu không
+     */
     public Optional<DocumentDTO> getDocumentById(String documentId) {
         try {
             DocumentEntity entity = documentDao.findById(documentId);
@@ -45,8 +50,71 @@ public class DocumentService {
 
             return Optional.of(dto);
         } catch (Exception e) {
-            // Có thể log lỗi ở đây nếu muốn
             return Optional.empty();
+        }
+    }
+
+    /**
+     * Thêm like cho tài liệu
+     * @param documentId ID của tài liệu
+     * @param userId ID của người dùng
+     * @return true nếu thành công, false nếu thất bại
+     */
+    public boolean likeDocument(String documentId, String userId) {
+        try {
+            DocumentEntity entity = documentDao.findById(documentId);
+            if (entity == null) return false;
+            return documentDao.addLike(documentId, userId);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Xóa like khỏi tài liệu
+     * @param documentId ID của tài liệu
+     * @param userId ID của người dùng
+     * @return true nếu thành công, false nếu thất bại
+     */
+    public boolean unlikeDocument(String documentId, String userId) {
+        try {
+            DocumentEntity entity = documentDao.findById(documentId);
+            if (entity == null) return false;
+            return documentDao.removeLike(documentId, userId);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Thêm bookmark cho tài liệu
+     * @param documentId ID của tài liệu
+     * @param userId ID của người dùng
+     * @return true nếu thành công, false nếu thất bại
+     */
+    public boolean bookmarkDocument(String documentId, String userId) {
+        try {
+            DocumentEntity entity = documentDao.findById(documentId);
+            if (entity == null) return false;
+            return documentDao.addBookmark(documentId, userId);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Xóa bookmark khỏi tài liệu
+     * @param documentId ID của tài liệu
+     * @param userId ID của người dùng
+     * @return true nếu thành công, false nếu thất bại
+     */
+    public boolean unbookmarkDocument(String documentId, String userId) {
+        try {
+            DocumentEntity entity = documentDao.findById(documentId);
+            if (entity == null) return false;
+            return documentDao.removeBookmark(documentId, userId);
+        } catch (Exception e) {
+            return false;
         }
     }
 }
