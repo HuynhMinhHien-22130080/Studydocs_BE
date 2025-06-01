@@ -193,6 +193,7 @@ public class UserDao {
         followerRef.update(FOLLOWING_SHARD_SIZE_FIELD, String.valueOf(remainingFollowingShards)).get();
     }
 
+
     private boolean hasDocumentsInCollection(CollectionReference collection) {
         return collection.listDocuments().iterator().hasNext();
     }

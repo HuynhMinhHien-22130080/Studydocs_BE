@@ -42,7 +42,6 @@ public class UserService {
         if (!userDao.exists(followerDTO.getFolloweeId())) {
             throw new ResourceNotFoundException("User", "id", followerDTO.getFolloweeId());
         }
-
         return userDao.removeFollow(followerDTO.getFolloweeId(), followerDTO.getFollowerId());
     }
 }
