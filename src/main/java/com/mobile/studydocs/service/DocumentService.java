@@ -22,4 +22,10 @@ public class DocumentService {
         res.addAll(documentDao.getDocumentsByTitle(keyword));
         return new SearchDTO(res);
     }
+
+    public SearchDTO getAll() throws ExecutionException, InterruptedException {
+        List<Document>res= new ArrayList<>();
+        res.addAll(documentDao.getAllDocuments());
+        return new SearchDTO(res);
+    }
 }

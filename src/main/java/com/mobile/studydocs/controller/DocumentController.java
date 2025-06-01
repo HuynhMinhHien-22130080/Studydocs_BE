@@ -28,4 +28,10 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
+    @RequestMapping(value = "/search", method = RequestMethod.GET)
+    public ResponseEntity<BaseResponse> getAll() throws ExecutionException, InterruptedException {
+        SearchDTO searchDTO = documentService.getAll();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
+    }
 }
