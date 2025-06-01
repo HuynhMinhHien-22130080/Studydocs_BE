@@ -44,6 +44,14 @@ public class UserDao {
     public DocumentReference getUserRef(String userId) {
         return firestore.collection(USER_COLLECTION).document(userId);
     }
+    public boolean exists(String userId) {
+        try {
+            return getUserRef(userId).get().get().exists();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     private String getFollowerShardSize(String userId) throws ExecutionException, InterruptedException {
         return getUserRef(userId).get().get().getString(FOLLOWER_SHARD_SIZE_FIELD);
@@ -185,7 +193,8 @@ public class UserDao {
         followerRef.update(FOLLOWING_SHARD_SIZE_FIELD, String.valueOf(remainingFollowingShards)).get();
     }
 
-    private boolean hasDocumentsInCollection(CollectionReference collection) throws ExecutionException, InterruptedException {
+
+    private boolean hasDocumentsInCollection(CollectionReference collection) {
         return collection.listDocuments().iterator().hasNext();
     }
 }
