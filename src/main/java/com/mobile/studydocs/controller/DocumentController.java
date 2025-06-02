@@ -23,7 +23,7 @@ public class DocumentController {
         this.documentService = documentService;
     }
     @RequestMapping(value = "/search", method = RequestMethod.GET)
-    public ResponseEntity<BaseResponse> search(@RequestParam("keyword") String keyword ) throws ExecutionException, InterruptedException {
+    public ResponseEntity<BaseResponse> search(@RequestParam("keyword") String keyword ){
         SearchDTO searchDTO = documentService.searchByTitle(keyword);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));

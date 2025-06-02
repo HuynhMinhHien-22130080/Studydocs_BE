@@ -17,15 +17,21 @@ public class DocumentService {
         this.documentDao = documentDao;
     }
 
-    public SearchDTO searchByTitle(String keyword) throws ExecutionException, InterruptedException {
+    public SearchDTO searchByTitle(String keyword)  {
         List<Document>res= new ArrayList<>();
-        res.addAll(documentDao.getDocumentsByTitle(keyword));
+        try{
+        res.addAll(documentDao.getDocumentsByTitle(keyword));}
+        catch(ExecutionException | InterruptedException e){
+        }
         return new SearchDTO(res);
     }
 
-    public SearchDTO getAll() throws ExecutionException, InterruptedException {
+    public SearchDTO getAll(){
         List<Document>res= new ArrayList<>();
-        res.addAll(documentDao.getAllDocuments());
+        try{
+        res.addAll(documentDao.getAllDocuments());}
+         catch(ExecutionException | InterruptedException e){
+            }
         return new SearchDTO(res);
     }
 }
