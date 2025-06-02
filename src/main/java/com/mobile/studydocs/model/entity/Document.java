@@ -10,23 +10,24 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Document {
+    private String id;
     private String userId;
     private String title;
     private String description;
     private String fileUrl;
     private String subject;
     private String university;
-    private boolean isDelete;
+    private Boolean isDelete;
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private Timestamp deletedAt;
-    private List<Like> likes = new ArrayList<>();     // từ subcollection "likes"
+    private List<Like> likes = new ArrayList<>();
 
     @Data @NoArgsConstructor @AllArgsConstructor @Builder
     public static class Like {
         private String userId;      // ai like
         private String type;
-        private Instant createAt;
+        private Timestamp createAt;
     }
 
 }

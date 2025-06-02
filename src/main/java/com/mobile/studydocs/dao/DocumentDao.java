@@ -124,9 +124,9 @@ Lấy document theo university
         return result;
     }
     /**
-     * Lấy DocumentEntity theo ID, bao gồm subcollection "likes"
+     * Lấy Document theo ID, bao gồm subcollection "likes"
      */
-    public DocumentEntity findById(String documentId) throws ExecutionException, InterruptedException {
+    public Document findById(String documentId) throws ExecutionException, InterruptedException {
         DocumentReference docRef = firestore.collection("documents").document(documentId);
         ApiFuture<DocumentSnapshot> future = docRef.get();
         DocumentSnapshot snapshot = future.get();
@@ -134,12 +134,12 @@ Lấy document theo university
             return null;
         }
         // Map dữ liệu chính
-        DocumentEntity doc = snapshot.toObject(DocumentEntity.class);
+        Document doc = snapshot.toObject(Document.class);
 
         // Lấy subcollection likes
         ApiFuture<QuerySnapshot> likesSnap = docRef.collection("likes").get();
         likesSnap.get().getDocuments().forEach(ds -> {
-            DocumentEntity.Like like = ds.toObject(DocumentEntity.Like.class);
+            Document.Like like = ds.toObject(Document.Like.class);
             doc.getLikes().add(like);
         });
         return doc;
@@ -156,7 +156,7 @@ Lấy document theo university
         CollectionReference likesRef = docRef.collection("likes");
         DocumentReference likeRef = likesRef.document(userId);
 
-        DocumentEntity.Like like = DocumentEntity.Like.builder()
+        Document.Like like = Document.Like.builder()
                 .userId(userId)
                 .type("LIKE")
                 .createAt(Instant.now())

@@ -18,9 +18,9 @@ public class DocumentDTO {
     private String subject;
     private String university;
     private Boolean isDelete;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private Instant deletedAt;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
+    private Timestamp deletedAt;
     private List<LikeDTO> likes;
 
     @Data
@@ -30,7 +30,7 @@ public class DocumentDTO {
     public static class LikeDTO {
         private String userId;
         private String type;
-        private Instant createAt;
+        private Timestamp createAt;
     }
 }
 

@@ -103,23 +103,6 @@ public class DocumentService {
         }
     }
 
-    public boolean followDocument(String documentId, String userId) {
-        try {
-            DocumentEntity entity = documentDao.findById(documentId);
-            if (entity == null) return false;
-            return documentDao.addFollower(documentId, userId);
-        } catch (Exception e) {
-            return false;
-        }
-    }
 
-    public boolean unfollowDocument(String documentId, String userId) {
-        try {
-            DocumentEntity entity = documentDao.findById(documentId);
-            if (entity == null) return false;
-            return documentDao.removeFollower(documentId, userId);
-        } catch (Exception e) {
-            return false;
-        }
     }
 }

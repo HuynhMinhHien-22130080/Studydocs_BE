@@ -59,7 +59,7 @@ public class DocumentController {
      * @return URL download nếu thành công, 404 nếu không tìm thấy
      */
     @GetMapping("/download/{documentId}")
-    public ResponseEntity<String> getDownloadUrl(@PathVariable String documentId) {
+    public ResponseEntity<String> getDownloadUrl(@PathVariable String documentId, @RequestParam String userId) {
         if (!authService.isAuthenticated(userId)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Bạn cần đăng nhập để tải tài liệu");
         }
@@ -110,24 +110,6 @@ public class DocumentController {
                 : ResponseEntity.notFound().build();
     }
 
-    @PostMapping("/{documentId}/follow")
-    public ResponseEntity<Void> followDocument(@PathVariable String documentId, @RequestParam String userId) {
-        if (!authService.isAuthenticated(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return documentService.followDocument(documentId, userId)
-                ? ResponseEntity.ok().build()
-                : ResponseEntity.notFound().build();
-    }
 
-    @DeleteMapping("/{documentId}/follow")
-    public ResponseEntity<Void> unfollowDocument(@PathVariable String documentId, @RequestParam String userId) {
-        if (!authService.isAuthenticated(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return documentService.unfollowDocument(documentId, userId)
-                ? ResponseEntity.ok().build()
-                : ResponseEntity.notFound().build();
-    }
 
 }
