@@ -41,7 +41,7 @@ public class DocumentService {
      */
     public Optional<DocumentDTO> getDocumentById(String documentId) {
         try {
-            DocumentEntity entity = documentDao.findById(documentId);
+            Document entity = documentDao.findById(documentId);
             if (entity == null) return Optional.empty();
 
             DocumentDTO dto = DocumentDTO.builder()
@@ -79,7 +79,7 @@ public class DocumentService {
      */
     public boolean likeDocument(String documentId, String userId) {
         try {
-            DocumentEntity entity = documentDao.findById(documentId);
+            Document entity = documentDao.findById(documentId);
             if (entity == null) return false;
             return documentDao.addLike(documentId, userId);
         } catch (Exception e) {
@@ -95,7 +95,7 @@ public class DocumentService {
      */
     public boolean unlikeDocument(String documentId, String userId) {
         try {
-            DocumentEntity entity = documentDao.findById(documentId);
+            Document entity = documentDao.findById(documentId);
             if (entity == null) return false;
             return documentDao.removeLike(documentId, userId);
         } catch (Exception e) {

@@ -44,72 +44,93 @@ public class DocumentController {
     /**
      * Xem chi tiết tài liệu theo ID
      * @param documentId Mã tài liệu
-     * @return DocumentDTO nếu tồn tại, 404 nếu không
+     * @return BaseResponse chứa DocumentDTO nếu tồn tại, 404 nếu không
      */
     @GetMapping("/detail/{documentId}")
-    public ResponseEntity<DocumentDTO> getDocumentDetail(@PathVariable String documentId) {
+    public ResponseEntity<BaseResponse> getDocumentDetail(@PathVariable String documentId) {
         return documentService.getDocumentById(documentId)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(dto -> ResponseEntity.status(HttpStatus.OK)
+                        .body(new BaseResponse(HttpStatus.OK.value(), "Lấy chi tiết tài liệu thành công", dto)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new BaseResponse(HttpStatus.NOT_FOUND.value(), "Tài liệu không tồn tại", null)));
     }
 
     /**
      * Lấy URL download tạm thời cho tài liệu từ Firebase Storage
      * @param documentId Mã tài liệu
-     * @return URL download nếu thành công, 404 nếu không tìm thấy
+     * @param userId ID của người dùng
+     * @return BaseResponse chứa URL download nếu thành công, 404 nếu không tìm thấy
      */
     @GetMapping("/download/{documentId}")
-    public ResponseEntity<String> getDownloadUrl(@PathVariable String documentId, @RequestParam String userId) {
+    public ResponseEntity<BaseResponse> getDownloadUrl(@PathVariable String documentId, @RequestParam String userId) {
         if (!authService.isAuthenticated(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Bạn cần đăng nhập để tải tài liệu");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new BaseResponse(HttpStatus.UNAUTHORIZED.value(), "Bạn cần đăng nhập để tải tài liệu", null));
         }
+
         return documentService.getDocumentById(documentId)
                 .map(dto -> {
                     String fileUrl = dto.getFileUrl();
-                    // Giả định fileUrl là path trong Storage (e.g., "documents/doc456/file.pdf")
-                    BlobId blobId = BlobId.of("your-bucket-name", fileUrl);
-                    // Tạo URL có thời hạn (1 giờ)
+                    if (fileUrl == null || fileUrl.isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(new BaseResponse(HttpStatus.BAD_REQUEST.value(), "Tài liệu không có file để tải", null));
+                    }
+                    BlobId blobId = BlobId.of(bucketName, fileUrl);
                     String downloadUrl = storage.signUrl(
                             BlobInfo.newBuilder(blobId).build(),
                             60, java.util.concurrent.TimeUnit.MINUTES
                     ).toString();
-                    return ResponseEntity.ok(downloadUrl);
+                    return ResponseEntity.status(HttpStatus.OK)
+                            .body(new BaseResponse(HttpStatus.OK.value(), "Lấy URL tải xuống thành công", downloadUrl));
                 })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new BaseResponse(HttpStatus.NOT_FOUND.value(), "Tài liệu không tồn tại", null)));
     }
 
     /**
      * Thêm "like" cho tài liệu
      * @param documentId Mã tài liệu
      * @param userId ID của người dùng thực hiện like
-     * @return 200 nếu thành công, 404 nếu tài liệu không tồn tại
+     * @return BaseResponse chứa boolean (true nếu thành công, false nếu thất bại)
      */
     @PostMapping("/{documentId}/like")
-    public ResponseEntity<Void> likeDocument(@PathVariable String documentId, @RequestParam String userId) {
+    public ResponseEntity<BaseResponse> likeDocument(@PathVariable String documentId, @RequestParam String userId) {
         if (!authService.isAuthenticated(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new BaseResponse(HttpStatus.UNAUTHORIZED.value(), "Bạn cần đăng nhập để thích tài liệu", false));
         }
-        return documentService.likeDocument(documentId, userId)
-                ? ResponseEntity.ok().build()
-                : ResponseEntity.notFound().build();
+
+        boolean success = documentService.likeDocument(documentId, userId);
+        if (success) {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new BaseResponse(HttpStatus.OK.value(), "Thích tài liệu thành công", true));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new BaseResponse(HttpStatus.NOT_FOUND.value(), "Tài liệu không tồn tại", false));
+        }
     }
 
     /**
      * Xóa "like" khỏi tài liệu
      * @param documentId Mã tài liệu
      * @param userId ID của người dùng thực hiện unlike
-     * @return 200 nếu thành công, 404 nếu tài liệu không tồn tại
+     * @return BaseResponse chứa boolean (true nếu thành công, false nếu thất bại)
      */
     @DeleteMapping("/{documentId}/like")
-    public ResponseEntity<Void> unlikeDocument(@PathVariable String documentId, @RequestParam String userId) {
+    public ResponseEntity<BaseResponse> unlikeDocument(@PathVariable String documentId, @RequestParam String userId) {
         if (!authService.isAuthenticated(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new BaseResponse(HttpStatus.UNAUTHORIZED.value(), "Bạn cần đăng nhập để bỏ thích tài liệu", false));
         }
-        return documentService.unlikeDocument(documentId, userId)
-                ? ResponseEntity.ok().build()
-                : ResponseEntity.notFound().build();
+
+        boolean success = documentService.unlikeDocument(documentId, userId);
+        if (success) {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new BaseResponse(HttpStatus.OK.value(), "Bỏ thích tài liệu thành công", true));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new BaseResponse(HttpStatus.NOT_FOUND.value(), "Tài liệu không tồn tại", false));
+        }
     }
-
-
-
+}
 }

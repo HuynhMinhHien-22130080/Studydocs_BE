@@ -156,12 +156,15 @@ Lấy document theo university
         CollectionReference likesRef = docRef.collection("likes");
         DocumentReference likeRef = likesRef.document(userId);
 
+        if (likeRef.get().get().exists()) {
+            return true;
+        }
+
         Document.Like like = Document.Like.builder()
                 .userId(userId)
                 .type("LIKE")
-                .createAt(Instant.now())
+                .createAt(Timestamp.from(Instant.now()))
                 .build();
-
         ApiFuture<WriteResult> future = likeRef.set(like);
         return future.get() != null;
     }
@@ -175,36 +178,7 @@ Lấy document theo university
     public boolean removeLike(String documentId, String userId) throws ExecutionException, InterruptedException {
         DocumentReference docRef = firestore.collection("documents").document(documentId);
         DocumentReference likeRef = docRef.collection("likes").document(userId);
-
         ApiFuture<WriteResult> future = likeRef.delete();
         return future.get() != null;
-    }
-
-    public boolean addFollower(String documentId, String userId) throws ExecutionException, InterruptedException {
-        DocumentReference docRef = firestore.collection("documents").document(documentId);
-        CollectionReference followersRef = docRef.collection("followers");
-        DocumentReference followerRef = followersRef.document(userId);
-
-        Follower follower = new Follower(userId, Instant.now());
-        ApiFuture<WriteResult> future = followerRef.set(follower);
-        return future.get() != null;
-    }
-
-    public boolean removeFollower(String documentId, String userId) throws ExecutionException, InterruptedException {
-        DocumentReference docRef = firestore.collection("documents").document(documentId);
-        DocumentReference followerRef = docRef.collection("followers").document(userId);
-
-        ApiFuture<WriteResult> future = followerRef.delete();
-        return future.get() != null;
-    }
-    @Data
-    public static class Follower {
-        private String userId;
-        private Instant followAt;
-
-        public Follower(String userId, Instant followAt) {
-            this.userId = userId;
-            this.followAt = followAt;
-        }
     }
 }
