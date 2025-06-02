@@ -20,4 +20,13 @@ public class Document {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private Timestamp deletedAt;
+    private List<Like> likes = new ArrayList<>();     // từ subcollection "likes"
+
+    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class Like {
+        private String userId;      // ai like
+        private String type;
+        private Instant createAt;
+    }
+
 }
