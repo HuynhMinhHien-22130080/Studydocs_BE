@@ -123,4 +123,62 @@ Lấy document theo university
         }
         return result;
     }
+    /**
+     * Lấy Document theo ID, bao gồm subcollection "likes"
+     */
+    public Document findById(String documentId) throws ExecutionException, InterruptedException {
+        DocumentReference docRef = firestore.collection("documents").document(documentId);
+        ApiFuture<DocumentSnapshot> future = docRef.get();
+        DocumentSnapshot snapshot = future.get();
+        if (!snapshot.exists()) {
+            return null;
+        }
+        // Map dữ liệu chính
+        Document doc = snapshot.toObject(Document.class);
+
+        // Lấy subcollection likes
+        ApiFuture<QuerySnapshot> likesSnap = docRef.collection("likes").get();
+        likesSnap.get().getDocuments().forEach(ds -> {
+            Document.Like like = ds.toObject(Document.Like.class);
+            doc.getLikes().add(like);
+        });
+        return doc;
+    }
+
+    /**
+     * Thêm một like vào subcollection "likes" của tài liệu
+     * @param documentId ID của tài liệu
+     * @param userId ID của người dùng thực hiện like
+     * @return true nếu thành công, false nếu thất bại
+     */
+    public boolean addLike(String documentId, String userId) throws ExecutionException, InterruptedException {
+        DocumentReference docRef = firestore.collection("documents").document(documentId);
+        CollectionReference likesRef = docRef.collection("likes");
+        DocumentReference likeRef = likesRef.document(userId);
+
+        if (likeRef.get().get().exists()) {
+            return true;
+        }
+
+        Document.Like like = Document.Like.builder()
+                .userId(userId)
+                .type("LIKE")
+                .createAt(Timestamp.from(Instant.now()))
+                .build();
+        ApiFuture<WriteResult> future = likeRef.set(like);
+        return future.get() != null;
+    }
+
+    /**
+     * Xóa một like khỏi subcollection "likes" của tài liệu
+     * @param documentId ID của tài liệu
+     * @param userId ID của người dùng thực hiện unlike
+     * @return true nếu thành công, false nếu thất bại
+     */
+    public boolean removeLike(String documentId, String userId) throws ExecutionException, InterruptedException {
+        DocumentReference docRef = firestore.collection("documents").document(documentId);
+        DocumentReference likeRef = docRef.collection("likes").document(userId);
+        ApiFuture<WriteResult> future = likeRef.delete();
+        return future.get() != null;
+    }
 }
