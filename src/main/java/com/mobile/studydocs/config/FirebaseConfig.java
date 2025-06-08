@@ -7,6 +7,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.cloud.StorageClient;
+import com.google.firebase.messaging.FirebaseMessaging;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,5 +68,16 @@ public class FirebaseConfig {
     public Firestore firestore(FirebaseApp firebaseApp) {
         // Khởi tạo và trả về Firestore client
         return FirestoreClient.getFirestore(firebaseApp);
+    }
+
+    /**
+     * Bean để sử dụng Firebase Cloud Messaging (FCM).
+     * FirebaseMessaging là client để gửi thông báo đến thiết bị người dùng.
+     *
+     * @return FirebaseMessaging instance
+     */
+    @Bean
+    public FirebaseMessaging firebaseMessaging(FirebaseApp firebaseApp) {
+        return FirebaseMessaging.getInstance(firebaseApp);
     }
 }
