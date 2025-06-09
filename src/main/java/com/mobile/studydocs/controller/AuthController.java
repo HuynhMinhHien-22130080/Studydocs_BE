@@ -44,4 +44,17 @@ public class AuthController {
                     .body(new BaseResponse(HttpStatus.UNAUTHORIZED.value(), "Token không hợp lệ", null));
         }
     }
+
+    // API Quên mật khẩu
+    // Client gửi email, BE gọi Firebase gửi email đặt lại mật khẩu
+    @PostMapping("/forgot-password")
+    public ResponseEntity<BaseResponse> forgotPassword(@RequestBody ForgotPasswordDTO request) {
+        boolean sent = authService.sendPasswordResetEmail(request.getEmail());
+        if (sent) {
+            return ResponseEntity.ok(new BaseResponse(HttpStatus.OK.value(), "Đã gửi email đặt lại mật khẩu", null));
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new BaseResponse(HttpStatus.BAD_REQUEST.value(), "Gửi email thất bại", null));
+        }
+    }
 }
