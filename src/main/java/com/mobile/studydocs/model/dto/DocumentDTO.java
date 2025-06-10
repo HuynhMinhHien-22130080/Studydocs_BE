@@ -1,8 +1,7 @@
 package com.mobile.studydocs.model.dto;
 
 import lombok.*;
-
-import java.time.Instant;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Data
@@ -33,4 +32,3 @@ public class DocumentDTO {
         private Timestamp createAt;
     }
 }
-

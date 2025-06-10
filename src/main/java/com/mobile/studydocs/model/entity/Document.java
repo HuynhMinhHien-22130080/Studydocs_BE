@@ -1,14 +1,14 @@
 package com.mobile.studydocs.model.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Document {
     private String id;
     private String userId;
@@ -21,13 +21,16 @@ public class Document {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private Timestamp deletedAt;
+    @Builder.Default
     private List<Like> likes = new ArrayList<>();
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class Like {
-        private String userId;      // ai like
+        private String userId;
         private String type;
         private Timestamp createAt;
     }
-
 }
