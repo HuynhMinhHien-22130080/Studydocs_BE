@@ -1,15 +1,14 @@
-package com.mobile.studydocs.model.entity;
+package com.mobile.studydocs.model.dto;
 
 import lombok.*;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Document {
+public class DocumentDTO {
     private String id;
     private String userId;
     private String title;
@@ -21,14 +20,13 @@ public class Document {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private Timestamp deletedAt;
-    @Builder.Default
-    private List<Like> likes = new ArrayList<>();
+    private List<LikeDTO> likes;
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class Like {
+    public static class LikeDTO {
         private String userId;
         private String type;
         private Timestamp createAt;
