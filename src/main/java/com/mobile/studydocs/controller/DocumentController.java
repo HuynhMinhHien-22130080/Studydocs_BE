@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 public class DocumentController {
     private final DocumentService documentService;
     private final Storage storage; // Thêm Storage để xử lý download
-    private final AuthService authService; // Thêm AuthService để kiểm tra người dùng đăng nhập
     private final String bucketName;
 
     @RequestMapping(value = "/search", method = RequestMethod.GET)
@@ -29,10 +28,9 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
-    public DocumentController(DocumentService documentService, Storage storage, AuthService authService, @Value("${firebase.bucket-name}") String bucketName) {
+    public DocumentController(DocumentService documentService, Storage storage, @Value("${firebase.bucket-name}") String bucketName) {
         this.documentService = documentService;
         this.storage = storage;
-        this.authService = authService;
         this.bucketName = bucketName;
     }
     /**
@@ -57,11 +55,6 @@ public class DocumentController {
      */
     @GetMapping("/download/{documentId}")
     public ResponseEntity<BaseResponse> getDownloadUrl(@PathVariable String documentId, @RequestParam String userId) {
-        if (!authService.isAuthenticated(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new BaseResponse(HttpStatus.UNAUTHORIZED.value(), "Bạn cần đăng nhập để tải tài liệu", null));
-        }
-
         return documentService.getDocumentById(documentId)
                 .map(dto -> {
                     String fileUrl = dto.getFileUrl();
@@ -89,11 +82,6 @@ public class DocumentController {
      */
     @PostMapping("/{documentId}/like")
     public ResponseEntity<BaseResponse> likeDocument(@PathVariable String documentId, @RequestParam String userId) {
-        if (!authService.isAuthenticated(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new BaseResponse(HttpStatus.UNAUTHORIZED.value(), "Bạn cần đăng nhập để thích tài liệu", false));
-        }
-
         boolean success = documentService.likeDocument(documentId, userId);
         if (success) {
             return ResponseEntity.status(HttpStatus.OK)
@@ -112,11 +100,6 @@ public class DocumentController {
      */
     @DeleteMapping("/{documentId}/like")
     public ResponseEntity<BaseResponse> unlikeDocument(@PathVariable String documentId, @RequestParam String userId) {
-        if (!authService.isAuthenticated(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new BaseResponse(HttpStatus.UNAUTHORIZED.value(), "Bạn cần đăng nhập để bỏ thích tài liệu", false));
-        }
-
         boolean success = documentService.unlikeDocument(documentId, userId);
         if (success) {
             return ResponseEntity.status(HttpStatus.OK)
