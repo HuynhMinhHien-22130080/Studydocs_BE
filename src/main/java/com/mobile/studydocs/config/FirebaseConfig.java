@@ -2,6 +2,7 @@ package com.mobile.studydocs.config;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.storage.Storage;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -35,10 +36,14 @@ public class FirebaseConfig {
     public FirebaseApp firebaseApp() throws IOException {
         // Đọc file JSON chứa thông tin xác thực
         FileInputStream serviceAccount = new FileInputStream(firebaseConfigPath);
-
+        FirestoreOptions firestoreOptions = FirestoreOptions
+                .newBuilder()
+                .setDatabaseId("studydocs")
+                .build();
         // Cấu hình FirebaseOptions với thông tin xác thực
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .setFirestoreOptions(firestoreOptions)
                 .setStorageBucket(bucketName)
                 .build();
 

@@ -16,6 +16,6 @@ public class NotificationEventConsumer implements EventConsumer<NotificationCrea
     @RabbitListener(queues = "notification-queue")
     public void consume(NotificationCreateEvent event) {
         NotificationMessage notificationMessage = NotificationMessageFactory.createMessage(event.type(), event.senderName());
-        firebaseNotificationService.sendNotification(event.receiverId(), notificationMessage);
+        firebaseNotificationService.sendNotification(event.receiverTokens(), notificationMessage);
     }
 }

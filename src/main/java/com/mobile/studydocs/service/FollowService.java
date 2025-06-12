@@ -18,11 +18,11 @@ public class FollowService {
     private final FollowDao followerDao;
 
     public void addFollower(String userId, FollowRequest followRequest) {
-        followerDao.addFollower(userId, followRequest.type().toString(), followRequest.targetId());
+        followerDao.addFollower(userId, followRequest.type(), followRequest.targetId());
     }
 
     public void removeFollower(String userId, FollowRequest followRequest) {
-        followerDao.removeFollower(userId, followRequest.type().toString(), followRequest.targetId());
+        followerDao.removeFollower(userId,  followRequest.targetId(),followRequest.type());
     }
 
     public void toggleNotifyEnable(String userId, ToggleNotifyEnableRequest toggleNotifyEnableRequest) {
@@ -30,7 +30,7 @@ public class FollowService {
     }
 
     public List<FollowerResponse> getFollowers(GetFollowerRequest getFollowerRequest) {
-        List<User> users = followerDao.getFollowers(getFollowerRequest.targetId(), getFollowerRequest.type().toString());
+        List<User> users = followerDao.getFollowers(getFollowerRequest.targetId(), getFollowerRequest.type());
         return users.stream().map(user -> FollowerResponse
                         .builder()
                         .userId(user.getUserId())

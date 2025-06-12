@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Component
 @RequiredArgsConstructor
@@ -16,8 +17,25 @@ public class NotificationDao {
     private static final String NOTIFICATION_COLLECTION = "notifications";
     private final Firestore firestore;
 
+    private boolean userNotExists(String userId) throws ExecutionException, InterruptedException {
+        return !firestore.collection(USER_COLLECTION).document(userId).get().get().exists();
+    }
+
+    private boolean notificationNotExists(String userId, String notificationId) throws ExecutionException, InterruptedException {
+        return !firestore.collection(USER_COLLECTION)
+                .document(userId)
+                .collection(NOTIFICATION_COLLECTION)
+                .document(notificationId)
+                .get()
+                .get()
+                .exists();
+    }
+
     public List<Notification> getNotifications(String userId) {
         try {
+            if (userNotExists(userId)) {
+                throw new RuntimeException("Người dùng không tồn tại");
+            }
             return firestore.collection(USER_COLLECTION)
                     .document(userId)
                     .collection(NOTIFICATION_COLLECTION)
@@ -32,6 +50,9 @@ public class NotificationDao {
 
     public boolean addNotification(String userId, Notification notification) {
         try {
+            if (userNotExists(userId)) {
+                throw new RuntimeException("Người dùng không tồn tại");
+            }
             firestore.collection(USER_COLLECTION)
                     .document(userId)
                     .collection(NOTIFICATION_COLLECTION)
@@ -46,13 +67,18 @@ public class NotificationDao {
 
     public boolean deleteNotification(String userId, String notificationId) {
         try {
+            if (userNotExists(userId)) {
+                throw new RuntimeException("Người dùng không tồn tại");
+            }
+            if (notificationNotExists(userId, notificationId)) {
+                throw new RuntimeException("Thông báo không tồn tại");
+            }
             firestore.collection(USER_COLLECTION)
                     .document(userId)
                     .collection(NOTIFICATION_COLLECTION)
                     .document(notificationId)
                     .delete()
                     .get();
-            log.info("Removed notification {} for userId={}", notificationId, userId);
             return true;
         } catch (Exception e) {
             log.error("Error removing notification {} for userId={}: {}", notificationId, userId, e.getMessage(), e);
@@ -62,15 +88,20 @@ public class NotificationDao {
 
     public boolean deleteAllNotification(String userId) {
         try {
+            if (userNotExists(userId)) {
+                throw new RuntimeException("Người dùng không tồn tại");
+            }
             var collection = firestore.collection(USER_COLLECTION)
                     .document(userId)
                     .collection(NOTIFICATION_COLLECTION)
                     .get()
                     .get();
+            if (collection.isEmpty()) {
+                throw new RuntimeException("Không tồn tại thông báo nào");
+            }
             for (var doc : collection.getDocuments()) {
                 doc.getReference().delete();
             }
-            log.info("Removed all notifications for userId={}", userId);
             return true;
         } catch (Exception e) {
             log.error("Error removing all notifications for userId={}: {}", userId, e.getMessage(), e);
@@ -80,13 +111,18 @@ public class NotificationDao {
 
     public boolean readNotification(String userId, String notificationId) {
         try {
+            if (userNotExists(userId)) {
+                throw new RuntimeException("Người dùng không tồn tại");
+            }
+            if (notificationNotExists(userId, notificationId)) {
+                throw new RuntimeException("Thông báo không tồn tại");
+            }
             firestore.collection(USER_COLLECTION)
                     .document(userId)
                     .collection(NOTIFICATION_COLLECTION)
                     .document(notificationId)
                     .update("isRead", true)
                     .get();
-            log.info("Marked notification {} as read for userId={}", notificationId, userId);
             return true;
         } catch (Exception e) {
             log.error("Error marking notification {} as read for userId={}: {}", notificationId, userId, e.getMessage(), e);
@@ -96,16 +132,20 @@ public class NotificationDao {
 
     public boolean readAllNotification(String userId) {
         try {
+            if (userNotExists(userId)) {
+                throw new RuntimeException("Người dùng không tồn tại");
+            }
             var collection = firestore.collection(USER_COLLECTION)
                     .document(userId)
                     .collection(NOTIFICATION_COLLECTION)
                     .get()
                     .get();
-
+            if (collection.isEmpty()) {
+                throw new RuntimeException("Không tồn tại thông báo nào");
+            }
             for (var doc : collection.getDocuments()) {
                 doc.getReference().update("isRead", true);
             }
-            log.info("Marked all notifications as read for userId={}", userId);
             return true;
         } catch (Exception e) {
             log.error("Error marking all notifications as read for userId={}: {}", userId, e.getMessage(), e);

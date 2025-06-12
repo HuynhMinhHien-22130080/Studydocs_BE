@@ -2,8 +2,10 @@ package com.mobile.studydocs.dao;
 
 import com.google.cloud.firestore.*;
 import com.mobile.studydocs.model.dto.response.FollowingResponse;
+import com.mobile.studydocs.model.entity.Follower;
 import com.mobile.studydocs.model.entity.Following;
 import com.mobile.studydocs.model.entity.User;
+import com.mobile.studydocs.model.enums.FollowType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -23,14 +25,14 @@ public class FollowDao {
     /**
      * Thêm follow relationship
      */
-    public void addFollower(String userId, String targetType, String targetId) {
+    public void addFollower(String userId, FollowType targetType, String targetId) {
         try {
-            DocumentReference userRef = firestore.collection(FOLLOWERS_COLLECTION).document(userId);
-            DocumentReference followerRef = updateFollowersList(targetId, targetType, userRef, true);
+            DocumentReference userRef = firestore.collection(USERS_COLLECTION).document(userId);
+            DocumentReference followerRef = updateFollowersList(targetId, targetType.toString(), userRef, true);
 
             //Tạo following
             Following following = Following.builder()
-                    .targetRef(firestore.collection(targetType).document(targetId))
+                    .targetRef(firestore.collection(targetType.getValue()).document(targetId))
                     .followerRef(followerRef)
                     .notifyEnable(true)
                     .build();
@@ -44,13 +46,13 @@ public class FollowDao {
     /**
      * Unfollow
      */
-    public void removeFollower(String userId, String targetId, String targetType) {
+    public void removeFollower(String userId, String targetId, FollowType targetType) {
         try {
             // Xóa từ collection followings
             DocumentReference targetRef = firestore.collection(USERS_COLLECTION).document(targetId);
             firestore.collection(USERS_COLLECTION).document(userId).collection(FOLLOWINGS_COLLECTION).whereEqualTo("targetRef", targetRef).get().get().getDocuments().forEach(doc -> {
                 Following following = doc.toObject(Following.class);
-                updateFollowersList(targetId, targetType, following.getFollowerRef(), false);
+                updateFollowersList(targetId, targetType.toString(), following.getFollowerRef(), false);
                 doc.getReference().delete();
             });
         } catch (Exception e) {
@@ -76,22 +78,21 @@ public class FollowDao {
      */
     private DocumentReference updateFollowersList(String targetId, String targetType, DocumentReference followerRef, boolean isAdd) {
         try {
-            QuerySnapshot queryDocumentSnapshots = firestore.collection(FOLLOWERS_COLLECTION)
-                    .whereEqualTo("targetId", targetId)
-                    .whereEqualTo("targetType", targetType)
-                    .get().get();
-            if (!queryDocumentSnapshots.isEmpty()) {
-                QueryDocumentSnapshot doc = queryDocumentSnapshots.getDocuments().get(0);
-                doc.getReference().update("followers", isAdd ? FieldValue.arrayUnion(followerRef) : FieldValue.arrayRemove(followerRef));
-                return doc.getReference();
+            DocumentSnapshot documentSnapshot = firestore.collection(FOLLOWERS_COLLECTION)
+                    .document(targetType + "-" + targetId)
+                    .get()
+                    .get();
+            if (documentSnapshot.exists()) {
+                documentSnapshot.getReference().update("followerRefs", isAdd ? FieldValue.arrayUnion(followerRef) : FieldValue.arrayRemove(followerRef));
+                return documentSnapshot.getReference();
             } else {
                 Map<String, Object> data = new HashMap<>();
                 data.put("targetId", targetId);
                 data.put("targetType", targetType);
                 List<DocumentReference> followers = new ArrayList<>();
                 if (isAdd) followers.add(followerRef);
-                data.put("followers", followers);
-                DocumentReference newDocRef = firestore.collection(FOLLOWERS_COLLECTION).document();
+                data.put("followerRefs", followers);
+                DocumentReference newDocRef = firestore.collection(FOLLOWERS_COLLECTION).document(targetType + "-" + targetId);
                 newDocRef.set(data);
                 return newDocRef;
             }
@@ -101,18 +102,34 @@ public class FollowDao {
         }
     }
 
-    public List<User> getFollowers(String targetId, String targetCollection) {
+    public List<User> getFollowers(String targetId, FollowType targetType) {
+        List<User> result = new ArrayList<>();
         try {
-            return firestore.collection(FOLLOWERS_COLLECTION)
-                    .whereEqualTo("targetId", targetId)
-                    .whereEqualTo("targetCollection", targetCollection)
+            Follower follower = firestore
+                    .collection(FOLLOWERS_COLLECTION)
+                    .document(targetType.toString() + "-" + targetId)
                     .get()
                     .get()
-                    .toObjects(User.class);
+                    .toObject(Follower.class);
+            if (follower != null && follower.getFollowerRefs() != null) {
+                for (DocumentReference followerRef : follower.getFollowerRefs()) {
+                    if (followerRef != null) {
+                        try {
+                            DocumentSnapshot docSnap = followerRef.get().get();
+                            if (docSnap.exists()) {
+                                User user = docSnap.toObject(User.class);
+                                if (user != null) result.add(user);
+                            }
+                        } catch (InterruptedException | ExecutionException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            }
         } catch (Exception e) {
-            log.error(e.getMessage());
-            return null;
+            log.error("Error getFollowers: {}", e.getMessage());
         }
+        return result;
     }
 
     public List<FollowingResponse> getFollowings(String userId) {

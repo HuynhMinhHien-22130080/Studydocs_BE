@@ -19,7 +19,12 @@ public class NotificationService {
     private final UserService userService;
 
     public List<Notification> getNotifications(String userId) {
-        return notificationDao.getNotifications(userId);
+        List<Notification> notifications = notificationDao.getNotifications(userId);
+        if (notifications != null) {
+            return notifications;
+        } else {
+            throw new RuntimeException("Lỗi không thể lấy thông báo" + userId);
+        }
     }
 
     public void addNotification(String userId, Notification notification) {
@@ -31,12 +36,16 @@ public class NotificationService {
         }
     }
 
-    public boolean deleteNotification(String userId, String notificationId) {
-        return notificationDao.deleteNotification(userId, notificationId);
+    public void deleteNotification(String userId, String notificationId) {
+        if (!notificationDao.deleteNotification(userId, notificationId))
+            throw new RuntimeException("Không thể xóa thông báo");
+
     }
 
-    public boolean deleteAllNotifications(String userId) {
-        return notificationDao.deleteAllNotification(userId);
+    public void deleteAllNotifications(String userId) {
+        if (!notificationDao.deleteAllNotification(userId))
+            throw new RuntimeException("Không thể xóa tất cả thông báo");
+
     }
 
     public boolean markAsRead(String userId, String notificationId) {

@@ -6,7 +6,6 @@ import com.mobile.studydocs.model.dto.request.ToggleNotifyEnableRequest;
 import com.mobile.studydocs.response.BaseResponse;
 import com.mobile.studydocs.service.FollowService;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 

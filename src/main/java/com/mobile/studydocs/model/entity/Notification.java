@@ -7,12 +7,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
+import com.google.cloud.Timestamp;
 import java.time.LocalDateTime;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Notification {
     @DocumentId
@@ -25,7 +25,15 @@ public class Notification {
     @Builder.Default
     private boolean isRead = false;             // Đã đọc chưa
     @Builder.Default
-    private Timestamp createdAt = Timestamp.valueOf(LocalDateTime.now()); // Thời điểm tạo
+    private Timestamp createdAt = Timestamp.now(); // Thời điểm tạo
+
+    public Boolean getIsRead() {
+        return this.isRead;
+    }
+
+    public void setIsRead(Boolean isRead) {
+        this.isRead = isRead;
+    }
 
 
 }

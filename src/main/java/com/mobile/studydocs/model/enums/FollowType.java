@@ -1,5 +1,8 @@
 package com.mobile.studydocs.model.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum FollowType {
     USER("users");
 
@@ -9,9 +12,5 @@ public enum FollowType {
         this.value = value;
     }
 
-    @Override
-    public String toString() {
-        return value;
-    }
 
 }
