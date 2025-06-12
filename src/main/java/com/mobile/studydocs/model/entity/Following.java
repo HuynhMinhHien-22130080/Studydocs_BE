@@ -1,13 +1,16 @@
 package com.mobile.studydocs.model.entity;
 
-import lombok.AllArgsConstructor;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.annotation.DocumentId;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Builder
 public class Following {
-    private String userId;
+    @DocumentId
+    private String followingId;
+    private DocumentReference followerRef;
+    private DocumentReference targetRef;
     private boolean notifyEnable;
 }
