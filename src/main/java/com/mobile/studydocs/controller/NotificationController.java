@@ -2,7 +2,6 @@ package com.mobile.studydocs.controller;
 
 import com.mobile.studydocs.response.BaseResponse;
 import com.mobile.studydocs.service.NotificationService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

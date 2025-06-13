@@ -1,6 +1,7 @@
 package com.mobile.studydocs.dao;
 
 import com.google.cloud.firestore.*;
+import com.mobile.studydocs.model.dto.response.FollowerResponse;
 import com.mobile.studydocs.model.dto.response.FollowingResponse;
 import com.mobile.studydocs.model.entity.Follower;
 import com.mobile.studydocs.model.entity.Following;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.print.Doc;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -22,13 +24,31 @@ public class FollowDao {
     private static final String USERS_COLLECTION = "users";
     private final Firestore firestore;
 
+    private FollowingResponse getFollowing(DocumentReference followingRef, DocumentReference targetRef) throws ExecutionException, InterruptedException {
+        Following following = followingRef.get().get().toObject(Following.class);
+        DocumentSnapshot targetSnapShot = targetRef.get().get();
+        if (targetSnapShot.exists() && targetSnapShot.getId().equals("users")) {
+            User user = targetSnapShot.toObject(User.class);
+            assert user != null;
+            assert following != null;
+            return FollowingResponse.builder()
+                    .followingId(followingRef.getId())
+                    .avatarUrl(user.getAvatarUrl())
+                    .name(user.getFullName())
+                    .targetId(user.getUserId())
+                    .notifyEnables(following.isNotifyEnable())
+                    .build();
+        } else
+            throw new RuntimeException("Lỗi khi lấy Following");
+    }
+
     /**
      * Thêm follow relationship
      */
-    public void addFollower(String userId, FollowType targetType, String targetId) {
+    public FollowingResponse addFollower(String userId, FollowType targetType, String targetId) {
         try {
             DocumentReference userRef = firestore.collection(USERS_COLLECTION).document(userId);
-            DocumentReference followerRef = updateFollowersList(targetId, targetType.toString(), userRef, true);
+            DocumentReference followerRef = addFollowerList(targetId, targetType.toString(), userRef);
 
             //Tạo following
             Following following = Following.builder()
@@ -36,7 +56,8 @@ public class FollowDao {
                     .followerRef(followerRef)
                     .notifyEnable(true)
                     .build();
-            userRef.collection(FOLLOWINGS_COLLECTION).add(following);
+            DocumentReference followingRef = userRef.collection(FOLLOWINGS_COLLECTION).add(following).get();
+            return getFollowing(followingRef, following.getTargetRef());
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException("Theo dõi không thành công");
@@ -46,15 +67,20 @@ public class FollowDao {
     /**
      * Unfollow
      */
-    public void removeFollower(String userId, String targetId, FollowType targetType) {
+    public void removeFollower(String userId, String followingId) {
         try {
-            // Xóa từ collection followings
-            DocumentReference targetRef = firestore.collection(USERS_COLLECTION).document(targetId);
-            firestore.collection(USERS_COLLECTION).document(userId).collection(FOLLOWINGS_COLLECTION).whereEqualTo("targetRef", targetRef).get().get().getDocuments().forEach(doc -> {
-                Following following = doc.toObject(Following.class);
-                updateFollowersList(targetId, targetType.toString(), following.getFollowerRef(), false);
-                doc.getReference().delete();
-            });
+            DocumentReference followingRef = firestore.collection(USERS_COLLECTION)
+                    .document(userId)
+                    .collection(FOLLOWINGS_COLLECTION)
+                    .document(followingId);
+            Following following = followingRef.get().get().toObject(Following.class);
+
+            //xóa FollowerRef
+            if (following == null) {
+                throw new RuntimeException("Hủy theo dõi không thành công");
+            }
+            following.getFollowerRef().update("followerRefs", FieldValue.arrayUnion(followingRef));
+            followingRef.delete();
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException("Hủy theo dõi không thành công");
@@ -76,21 +102,21 @@ public class FollowDao {
     /**
      * Helper method để cập nhật danh sách followers
      */
-    private DocumentReference updateFollowersList(String targetId, String targetType, DocumentReference followerRef, boolean isAdd) {
+    private DocumentReference addFollowerList(String targetId, String targetType, DocumentReference followerRef) {
         try {
             DocumentSnapshot documentSnapshot = firestore.collection(FOLLOWERS_COLLECTION)
                     .document(targetType + "-" + targetId)
                     .get()
                     .get();
             if (documentSnapshot.exists()) {
-                documentSnapshot.getReference().update("followerRefs", isAdd ? FieldValue.arrayUnion(followerRef) : FieldValue.arrayRemove(followerRef));
+                documentSnapshot.getReference().update("followerRefs", FieldValue.arrayUnion(followerRef));
                 return documentSnapshot.getReference();
             } else {
                 Map<String, Object> data = new HashMap<>();
                 data.put("targetId", targetId);
                 data.put("targetType", targetType);
                 List<DocumentReference> followers = new ArrayList<>();
-                if (isAdd) followers.add(followerRef);
+                followers.add(followerRef);
                 data.put("followerRefs", followers);
                 DocumentReference newDocRef = firestore.collection(FOLLOWERS_COLLECTION).document(targetType + "-" + targetId);
                 newDocRef.set(data);

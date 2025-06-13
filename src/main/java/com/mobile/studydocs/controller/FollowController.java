@@ -17,14 +17,12 @@ public class FollowController {
 
     @PostMapping("/follow")
     public BaseResponse follow(@RequestAttribute("userId") String userId, @RequestBody FollowRequest followRequest) {
-        followService.addFollower(userId, followRequest);
-        return new BaseResponse(HttpStatus.OK.value(), "Theo dõi thành công", true);
+        return new BaseResponse(HttpStatus.OK.value(), "Theo dõi thành công", followService.addFollower(userId, followRequest));
     }
 
     @PostMapping("/unfollow")
-    public BaseResponse unFollow(@RequestAttribute("userId") String userId, @RequestBody FollowRequest followRequest) {
-        followService.removeFollower(userId, followRequest);
-        return new BaseResponse(HttpStatus.OK.value(), "Hủy Theo dõi thành công", true);
+    public BaseResponse unFollow(@RequestAttribute("userId") String userId, @RequestBody String followingId) {
+        return new BaseResponse(HttpStatus.OK.value(), "Hủy Theo dõi thành công", followService.removeFollower(userId, followingId));
     }
 
     @PatchMapping("/follow")

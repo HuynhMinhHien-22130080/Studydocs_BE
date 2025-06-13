@@ -6,6 +6,7 @@ import com.mobile.studydocs.model.dto.request.GetFollowerRequest;
 import com.mobile.studydocs.model.dto.request.ToggleNotifyEnableRequest;
 import com.mobile.studydocs.model.dto.response.FollowerResponse;
 import com.mobile.studydocs.model.dto.response.FollowingResponse;
+import com.mobile.studydocs.model.entity.Follower;
 import com.mobile.studydocs.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,12 +18,13 @@ import java.util.List;
 public class FollowService {
     private final FollowDao followerDao;
 
-    public void addFollower(String userId, FollowRequest followRequest) {
-        followerDao.addFollower(userId, followRequest.type(), followRequest.targetId());
+    public FollowingResponse addFollower(String userId, FollowRequest followRequest) {
+        return followerDao.addFollower(userId, followRequest.type(), followRequest.targetId());
     }
 
-    public void removeFollower(String userId, FollowRequest followRequest) {
-        followerDao.removeFollower(userId,  followRequest.targetId(),followRequest.type());
+    public String removeFollower(String userId, String followingId) {
+        followerDao.removeFollower(userId, followingId);
+        return followingId;
     }
 
     public void toggleNotifyEnable(String userId, ToggleNotifyEnableRequest toggleNotifyEnableRequest) {
@@ -44,8 +46,8 @@ public class FollowService {
         return followerDao.getFollowings(userId);
     }
 
-    public List<String> getFCMTokensNeedNotify(String userId,String targetId, String targetType) {
-        return followerDao.getFCMTokens(userId,targetId, targetType);
+    public List<String> getFCMTokensNeedNotify(String userId, String targetId, String targetType) {
+        return followerDao.getFCMTokens(userId, targetId, targetType);
     }
 
 }
