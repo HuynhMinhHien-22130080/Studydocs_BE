@@ -1,88 +1,58 @@
 package com.mobile.studydocs.service;
 
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.MessagingErrorCode;
-import com.mobile.studydocs.dao.DocumentDao;
-import com.mobile.studydocs.dao.FollowerDao;
-import com.mobile.studydocs.model.entity.Notifications;
-import com.mobile.studydocs.model.event.DocumentUploadedEvent;
-import com.mobile.studydocs.model.messaging.DocumentsMessage;
+import com.mobile.studydocs.dao.NotificationDao;
+import com.mobile.studydocs.event.model.NotificationCreateEvent;
+import com.mobile.studydocs.event.rabbitmq.producer.NotificationEventProducer;
+import com.mobile.studydocs.model.entity.Notification;
+import com.mobile.studydocs.model.enums.NotificationType;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
-    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
-    private static final String NEW_DOCUMENT_NOTIFICATION_TITLE = "Bài viết mới";
+    private final NotificationDao notificationDao;
+    private final NotificationEventProducer notificationEventProducer;
+    private final FollowService followService;
+    private final UserService userService;
 
-    private final FirebaseNotificationService firebaseNotificationService;
-    private final FollowerDao userDao;
-    private final DocumentDao documentDao;
-
-
-    @Async
-    public void notify(DocumentUploadedEvent event) {
-        logger.info("Xử lý thông báo: docId={}, userId={}", event.getDocumentId(), event.getUserId());
-        try {
-            DocumentsMessage document = new DocumentsMessage(documentDao.findById(event.getDocumentId()));
-            Map<String, String[]> fcmTokens = userDao.getFCMTokensForNotifiableFollowers(event.getUserId());
-
-            if (fcmTokens.isEmpty()) {
-                logger.info("Không có follower nào cần thông báo cho docId={}", event.getDocumentId());
-                return;
-            }
-
-            logger.info("Gửi thông báo cho {} follower của docId={}", fcmTokens.size(), event.getDocumentId());
-
-            for (Map.Entry<String, String[]> entry : fcmTokens.entrySet()) {
-                String followerId = entry.getKey();
-                String[] tokens = entry.getValue();
-
-                //Tạo notification
-                Notifications notifications = Notifications.builder()
-                        .senderId(event.getUserId())
-                        .documentId(event.getDocumentId())
-                        .type("new_document")
-                        .title(NEW_DOCUMENT_NOTIFICATION_TITLE)
-                        .message(document.getDescription())
-                        .build();
-                userDao.addNotification(followerId, notifications);
-
-                //Gửi FCM Token
-                int successCount = 0;
-                int invalidTokenCount = 0;
-
-                for (String token : tokens) {
-                    try {
-                        firebaseNotificationService.sendNotification(token, NEW_DOCUMENT_NOTIFICATION_TITLE, notifications.getMessage());
-                        successCount++;
-                    } catch (FirebaseMessagingException e) {
-                        MessagingErrorCode errorCode = e.getMessagingErrorCode();
-                        if (errorCode == MessagingErrorCode.UNREGISTERED) {
-                            userDao.removeFCMToken(followerId, token);
-                            invalidTokenCount++;
-                        }
-                    }
-                }
-
-                if (invalidTokenCount > 0) {
-                    logger.warn("Follower {} có {} token không hợp lệ đã bị xóa", followerId, invalidTokenCount);
-                }
-            }
-
-            logger.info("Hoàn thành gửi thông báo cho docId={}", event.getDocumentId());
-        } catch (ExecutionException | InterruptedException e) {
-            logger.error("Lỗi xử lý thông báo docId={}: {}", event.getDocumentId(), e.getMessage());
+    public List<Notification> getNotifications(String userId) {
+        List<Notification> notifications = notificationDao.getNotifications(userId);
+        if (notifications != null) {
+            return notifications;
+        } else {
+            throw new RuntimeException("Lỗi không thể lấy thông báo" + userId);
         }
     }
 
+    public void addNotification(String userId, Notification notification) {
+        if (notificationDao.addNotification(userId, notification)) {
+            String followType = NotificationType.getFollowType(notification.getType()).toString();
+            List<String> tokens = followService.getFCMTokensNeedNotify(userId, notification.getTargetId(), followType);
+            String senderName = userService.findUserById(notification.getSenderId()).getFullName();
+            notificationEventProducer.publish(new NotificationCreateEvent(tokens, notification.getType(), senderName));
+        }
+    }
 
+    public void deleteNotification(String userId, String notificationId) {
+        if (!notificationDao.deleteNotification(userId, notificationId))
+            throw new RuntimeException("Không thể xóa thông báo");
+
+    }
+
+    public void deleteAllNotifications(String userId) {
+        if (!notificationDao.deleteAllNotification(userId))
+            throw new RuntimeException("Không thể xóa tất cả thông báo");
+
+    }
+
+    public boolean markAsRead(String userId, String notificationId) {
+        return notificationDao.readNotification(userId, notificationId);
+    }
+
+    public boolean markAllAsRead(String userId) {
+        return notificationDao.readAllNotification(userId);
+    }
 }
-
