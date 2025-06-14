@@ -2,6 +2,10 @@ package com.mobile.studydocs.dao;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
+
+import com.google.firebase.cloud.FirestoreClient;
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import com.mobile.studydocs.model.dto.SearchDTO;
 import com.mobile.studydocs.model.entity.Document;
@@ -11,6 +15,11 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Component
