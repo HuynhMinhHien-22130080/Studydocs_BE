@@ -22,12 +22,7 @@ public class DocumentController {
     private final Storage storage; // Thêm Storage để xử lý download
     private final String bucketName;
 
-    @RequestMapping(value = "/search", method = RequestMethod.GET)
-    public ResponseEntity<BaseResponse> search(@RequestParam("keyword") String keyword ){
-        SearchDTO searchDTO = documentService.searchByTitle(keyword);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
-    }
+
     public DocumentController(DocumentService documentService, Storage storage, @Value("${firebase.bucket-name}") String bucketName) {
         this.documentService = documentService;
         this.storage = storage;
@@ -108,5 +103,23 @@ public class DocumentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new BaseResponse(HttpStatus.NOT_FOUND.value(), "Tài liệu không tồn tại", false));
         }
+    }
+    @GetMapping( "/searchByTitle")
+    public ResponseEntity<BaseResponse> searchByTitle(@RequestParam("keyword") String title ){
+        SearchDTO searchDTO = documentService.searchByTitle(title);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
+    }
+    @GetMapping( "/searchByUniversity")
+    public ResponseEntity<BaseResponse> searchByUniversity(@RequestParam("keyword") String university ){
+        SearchDTO searchDTO = documentService.searchByUniversity(university);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
+    }
+    @GetMapping( "/searchBySubject")
+    public ResponseEntity<BaseResponse> searchBySubject(@RequestParam("keyword") String subject ){
+        SearchDTO searchDTO = documentService.searchBySubject(subject);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
 }

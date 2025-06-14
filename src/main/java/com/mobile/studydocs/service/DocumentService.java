@@ -1,6 +1,7 @@
 package com.mobile.studydocs.service;
 
 import com.mobile.studydocs.dao.DocumentDao;
+import com.mobile.studydocs.exception.BusinessException;
 import com.mobile.studydocs.model.dto.DocumentDTO;
 import com.mobile.studydocs.model.dto.SearchDTO;
 import com.mobile.studydocs.model.entity.Document;
@@ -24,39 +25,43 @@ public class DocumentService {
         this.documentDao = documentDao;
     }
 
-    public SearchDTO searchByTitle(String keyword)  {
+    public SearchDTO searchByTitle(String title)  {
         List<Document>res= new ArrayList<>();
         try{
-            res.addAll(documentDao.getDocumentsByTitle(keyword));}
+        res.addAll(documentDao.getDocumentsByTitle(title));}
         catch(ExecutionException | InterruptedException e){
+            throw new BusinessException("Error while searching by title",e.getCause());
         }
         return new SearchDTO(res);
-    public SearchDTO searchByTitle(String keyword)  {
+    }public SearchDTO searchByUniversity(String university)  {
         List<Document>res= new ArrayList<>();
         try{
-        res.addAll(documentDao.getDocumentsByTitle(keyword));}
+            res.addAll(documentDao.getDocumentsByUniversity(university));}
         catch(ExecutionException | InterruptedException e){
+            throw new BusinessException("Error while searching by title",e.getCause());
         }
         return new SearchDTO(res);
     }
 
-    public SearchDTO getAll(){
+    public SearchDTO searchBySubject(String subject)  {
+        List<Document>res= new ArrayList<>();
+        try{
+            res.addAll(documentDao.getDocumentsBySubject(subject));}
+        catch(ExecutionException | InterruptedException e){
+            throw new BusinessException("Error while searching by title",e.getCause());
+        }
+        return new SearchDTO(res);
+    }
+    public SearchDTO getAll(String userID){
         List<Document>res= new ArrayList<>();
         try{
         res.addAll(documentDao.getAllDocuments());}
          catch(ExecutionException | InterruptedException e){
+             throw new BusinessException("Error while searching by title",e.getCause());
             }
         return new SearchDTO(res);
     }
 
-    public SearchDTO getAll(){
-        List<Document>res= new ArrayList<>();
-        try{
-            res.addAll(documentDao.getAllDocuments());}
-        catch(ExecutionException | InterruptedException e){
-        }
-        return new SearchDTO(res);
-    }
     /**
      * Lấy thông tin chi tiết tài liệu theo ID và chuyển thành DTO
      * @param documentId ID của tài liệu cần lấy
