@@ -3,10 +3,9 @@ package com.mobile.studydocs.service;
 import com.mobile.studydocs.dao.FollowDao;
 import com.mobile.studydocs.model.dto.request.FollowRequest;
 import com.mobile.studydocs.model.dto.request.GetFollowerRequest;
-import com.mobile.studydocs.model.dto.request.ToggleNotifyEnableRequest;
+import com.mobile.studydocs.model.dto.request.ToggleNotifyRequest;
 import com.mobile.studydocs.model.dto.response.FollowerResponse;
 import com.mobile.studydocs.model.dto.response.FollowingResponse;
-import com.mobile.studydocs.model.entity.Follower;
 import com.mobile.studydocs.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,8 +26,8 @@ public class FollowService {
         return followingId;
     }
 
-    public void toggleNotifyEnable(String userId, ToggleNotifyEnableRequest toggleNotifyEnableRequest) {
-        followerDao.toggleNotification(userId, toggleNotifyEnableRequest.followingId(), toggleNotifyEnableRequest.notifyEnables());
+    public void toggleNotifyEnable(String userId, ToggleNotifyRequest toggleNotifyRequest) {
+        followerDao.toggleNotification(userId, toggleNotifyRequest.followingId(), toggleNotifyRequest.notifyEnable());
     }
 
     public List<FollowerResponse> getFollowers(GetFollowerRequest getFollowerRequest) {
