@@ -2,16 +2,19 @@ package com.mobile.studydocs.controller;
 
 import com.mobile.studydocs.model.dto.request.FollowRequest;
 import com.mobile.studydocs.model.dto.request.GetFollowerRequest;
-import com.mobile.studydocs.model.dto.request.ToggleNotifyEnableRequest;
+import com.mobile.studydocs.model.dto.request.ToggleNotifyRequest;
+import com.mobile.studydocs.model.enums.FollowType;
 import com.mobile.studydocs.response.BaseResponse;
 import com.mobile.studydocs.service.FollowService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
+@Slf4j
 public class FollowController {
     private final FollowService followService;
 
@@ -26,13 +29,14 @@ public class FollowController {
     }
 
     @PatchMapping("/follow")
-    public BaseResponse toggleNotifyEnable(@RequestAttribute("userId") String userId, @RequestBody ToggleNotifyEnableRequest toggleNotifyEnableRequest) {
-        followService.toggleNotifyEnable(userId, toggleNotifyEnableRequest);
+    public BaseResponse toggleNotifyEnable(@RequestAttribute("userId") String userId, @RequestBody ToggleNotifyRequest toggleNotifyRequest) {
+        followService.toggleNotifyEnable(userId, toggleNotifyRequest);
         return new BaseResponse(HttpStatus.OK.value(), "Thay đổi thông báo thành công", true);
     }
 
     @GetMapping("/follower")
-    public BaseResponse getFollowers(@RequestBody GetFollowerRequest getFollowerRequest) {
+    public BaseResponse getFollowers(@RequestParam("targetId") String targetId, @RequestParam("type") FollowType type) {
+        GetFollowerRequest getFollowerRequest = new GetFollowerRequest(targetId, type);
         return new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách người theo dõi thành công", followService.getFollowers(getFollowerRequest));
     }
 
