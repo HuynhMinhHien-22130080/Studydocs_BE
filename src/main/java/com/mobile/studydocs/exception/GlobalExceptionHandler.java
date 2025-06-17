@@ -40,4 +40,10 @@ public class GlobalExceptionHandler {
                 .body(new BaseResponse(HttpStatusCodes.STATUS_CODE_SERVER_ERROR,
                         "Đã xảy ra lỗi không mong muốn: " + e.getMessage(), null));
     }
+
+    @ExceptionHandler(NotificationNotFound.class)
+    public ResponseEntity<BaseResponse> handleNotificationNotFound(NotificationNotFound e) {
+        return ResponseEntity.status(e.getStatus())
+                .body(new BaseResponse(e.getStatus().value(), e.getMessage(), Map.of("errorCode", e.getErrorCode())));
+    }
 }

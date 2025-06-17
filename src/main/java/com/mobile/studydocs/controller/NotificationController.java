@@ -21,12 +21,14 @@ public class NotificationController {
 
     @PatchMapping("/read/{notificationId}")
     public BaseResponse readNotification(@RequestAttribute("userId") String userId, @PathVariable String notificationId) {
-        return new BaseResponse(HttpStatus.OK.value(), "Đánh dấu đọc thông báo thành công", notificationService.markAsRead(userId, notificationId));
+        notificationService.markAsRead(userId, notificationId);
+        return new BaseResponse(HttpStatus.OK.value(), "Đánh dấu đọc thông báo thành công", true);
     }
 
     @PatchMapping()
     public BaseResponse readAllNotifications(@RequestAttribute("userId") String userId) {
-        return new BaseResponse(HttpStatus.OK.value(), "Đánh dấu đọc tất cả thông báo thành công", notificationService.markAllAsRead(userId));
+        notificationService.markAllAsRead(userId);
+        return new BaseResponse(HttpStatus.OK.value(), "Đánh dấu đọc tất cả thông báo thành công", true);
     }
 
     @DeleteMapping("/{notificationId}")
