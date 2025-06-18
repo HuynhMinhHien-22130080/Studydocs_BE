@@ -3,6 +3,7 @@ package com.mobile.studydocs.service;
 import com.mobile.studydocs.dao.NotificationDao;
 import com.mobile.studydocs.event.model.NotificationCreateEvent;
 import com.mobile.studydocs.event.rabbitmq.producer.NotificationEventProducer;
+import com.mobile.studydocs.exception.NotificationNotFound;
 import com.mobile.studydocs.model.entity.Notification;
 import com.mobile.studydocs.model.enums.NotificationType;
 import lombok.RequiredArgsConstructor;
@@ -28,31 +29,59 @@ public class NotificationService {
     }
 
     public void addNotification(String userId, Notification notification) {
-        if (notificationDao.addNotification(userId, notification)) {
-            String followType = NotificationType.getFollowType(notification.getType()).toString();
-            List<String> tokens = followService.getFCMTokensNeedNotify(userId, notification.getTargetId(), followType);
-            String senderName = userService.findUserById(notification.getSenderId()).getFullName();
-            notificationEventProducer.publish(new NotificationCreateEvent(tokens, notification.getType(), senderName));
+        try {
+            notificationDao.addNotification(userId, notification);
+        } catch (NotificationNotFound e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Không thể thêm thông báo");
         }
+        String followType = NotificationType.getFollowType(notification.getType()).toString();
+        List<String> tokens = followService.getFCMTokensNeedNotify(userId, notification.getTargetId(), followType);
+        String senderName = userService.findUserById(notification.getSenderId()).getFullName();
+        notificationEventProducer.publish(new NotificationCreateEvent(tokens, notification.getType(), senderName));
     }
 
     public void deleteNotification(String userId, String notificationId) {
-        if (!notificationDao.deleteNotification(userId, notificationId))
+        try {
+            notificationDao.deleteNotification(userId, notificationId);
+        } catch (NotificationNotFound e) {
+            throw e;
+        } catch (Exception e) {
             throw new RuntimeException("Không thể xóa thông báo");
-
+        }
     }
 
     public void deleteAllNotifications(String userId) {
-        if (!notificationDao.deleteAllNotification(userId))
+        try {
+            notificationDao.deleteAllNotification(userId);
+        } catch (
+                NotificationNotFound e) {
+            throw e;
+        } catch (Exception e) {
             throw new RuntimeException("Không thể xóa tất cả thông báo");
+        }
 
     }
 
-    public boolean markAsRead(String userId, String notificationId) {
-        return notificationDao.readNotification(userId, notificationId);
+    public void markAsRead(String userId, String notificationId) {
+        try {
+            notificationDao.readNotification(userId, notificationId);
+        } catch (
+                NotificationNotFound e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Không thể đánh dấu tất cả đã đọc");
+        }
     }
 
-    public boolean markAllAsRead(String userId) {
-        return notificationDao.readAllNotification(userId);
+    public void markAllAsRead(String userId) {
+        try {
+             notificationDao.readAllNotification(userId);
+        } catch (NotificationNotFound e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Không thể đánh dấu đã đọc");
+        }
     }
 }
