@@ -7,15 +7,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/university")
+@AllArgsConstructor
 public class UniversityController {
     private final UniversityService universityService;
-
-    public UniversityController(UniversityService universityService) {
-        this.universityService = universityService;
-    }
 
     // ===== hao lam phần này (upload university) =====
     /**
@@ -50,4 +48,21 @@ public class UniversityController {
         }
     }
     // ===== end hao lam phần này =====
+
+    @PostMapping("/{id}/subject")
+    public ResponseEntity<BaseResponse> addSubject(@PathVariable String id, @RequestBody String subject) {
+        try {
+            boolean result = universityService.addSubject(id, subject);
+            if (result) {
+                return ResponseEntity.status(HttpStatus.OK)
+                        .body(new BaseResponse(HttpStatus.OK.value(), "Thêm subject thành công", true));
+            } else {
+                return ResponseEntity.status(HttpStatus.OK)
+                        .body(new BaseResponse(HttpStatus.OK.value(), "Subject đã tồn tại", false));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new BaseResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi thêm subject", false));
+        }
+    }
 }

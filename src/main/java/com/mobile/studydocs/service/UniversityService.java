@@ -24,4 +24,10 @@ public class UniversityService {
         return universityDao.getAll();
     }
     // ===== end hao lam phần này =====
+
+    // ===== hao lam phần này (add subject to university) =====
+    public boolean addSubject(String universityId, String subjectName) throws Exception {
+        return universityDao.addSubject(universityId, subjectName);
+    }
+    // ===== end hao lam phần này =====
 }
