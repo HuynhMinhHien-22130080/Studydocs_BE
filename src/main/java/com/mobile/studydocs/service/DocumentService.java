@@ -52,7 +52,7 @@ public class DocumentService {
         }
         return new SearchDTO(res);
     }
-    public SearchDTO getAll(String userID){
+    public SearchDTO getAll(){
         List<Document>res= new ArrayList<>();
         try{
         res.addAll(documentDao.getAllDocuments());}

@@ -122,4 +122,11 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
+    @GetMapping( "/getAllDocument")
+    public ResponseEntity<BaseResponse> getAll(){
+        SearchDTO searchDTO = documentService.getAll();
+        System.out.println("da gui request lay tat ca doc");
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
+    }
 }
