@@ -190,4 +190,16 @@ Lấy document theo university
         ApiFuture<WriteResult> future = likeRef.delete();
         return future.get() != null;
     }
+
+    // ===== hao lam phần này (upload document + file) =====
+    /**
+     * Lưu document mới vào Firestore
+     */
+    public void save(Document document) throws Exception {
+        Firestore db = FirestoreClient.getFirestore();
+        String docId = document.getId() != null ? document.getId() : db.collection(DOCUMENTS_COLLECTION).document().getId();
+        document.setId(docId);
+        db.collection(DOCUMENTS_COLLECTION).document(docId).set(document).get();
+    }
+    // ===== end hao lam phần này =====
 }
