@@ -1,7 +1,9 @@
 package com.mobile.studydocs.dao;
 
-import com.google.cloud.firestore.*;
-import com.mobile.studydocs.model.dto.response.FollowerResponse;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.FieldValue;
+import com.google.cloud.firestore.Firestore;
 import com.mobile.studydocs.model.dto.response.FollowingResponse;
 import com.mobile.studydocs.model.entity.Follower;
 import com.mobile.studydocs.model.entity.Following;
@@ -11,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.print.Doc;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -26,20 +27,25 @@ public class FollowDao {
 
     private FollowingResponse getFollowing(DocumentReference followingRef, DocumentReference targetRef) throws ExecutionException, InterruptedException {
         Following following = followingRef.get().get().toObject(Following.class);
-        DocumentSnapshot targetSnapShot = targetRef.get().get();
-        if (targetSnapShot.exists() && targetSnapShot.getId().equals("users")) {
-            User user = targetSnapShot.toObject(User.class);
-            assert user != null;
-            assert following != null;
-            return FollowingResponse.builder()
-                    .followingId(followingRef.getId())
-                    .avatarUrl(user.getAvatarUrl())
-                    .name(user.getFullName())
-                    .targetId(user.getUserId())
-                    .notifyEnables(following.isNotifyEnable())
-                    .build();
-        } else
+        if (following != null) {
+            DocumentSnapshot targetSnapShot = targetRef.get().get();
+            if (targetSnapShot.exists() && targetSnapShot.getId().equals("users")) {
+                User user = targetSnapShot.toObject(User.class);
+                assert user != null;
+                return FollowingResponse.builder()
+                        .followingId(followingRef.getId())
+                        .targetType(FollowType.USER)
+                        .avatarUrl(user.getAvatarUrl())
+                        .name(user.getFullName())
+                        .targetId(user.getUserId())
+                        .notifyEnables(following.isNotifyEnable())
+                        .build();
+            } else {
+                throw new RuntimeException("Loại theo dõi không hợp lệ");
+            }
+        } else {
             throw new RuntimeException("Lỗi khi lấy Following");
+        }
     }
 
     /**
@@ -176,6 +182,7 @@ public class FollowDao {
                                             .avatarUrl(user.getAvatarUrl())
                                             .name(user.getFullName())
                                             .targetId(user.getUserId())
+                                            .targetType(FollowType.USER)
                                             .notifyEnables(following.isNotifyEnable())
                                             .build());
                                 }
