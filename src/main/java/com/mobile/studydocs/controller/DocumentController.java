@@ -133,6 +133,18 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
+
+    /**
+     * Lấy tất cả tài liệu của một user cụ thể
+     * @param userId ID của user cần lấy tài liệu
+     * @return BaseResponse chứa danh sách tài liệu
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<BaseResponse> getDocumentsByUserId(@PathVariable String userId) {
+        SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu của user thành công", searchDTO));
+    }
     // ===== hao lam phần này (upload document + file) =====
     /**
      * Upload document metadata + file to Firebase Storage and Firestore
@@ -151,4 +163,11 @@ public class DocumentController {
         }
     }
     // ===== end hao lam phần này =====
+    // ===== phần này của Hảo =====
+    @GetMapping("/my-documents")
+    public BaseResponse getMyDocuments(@RequestAttribute("userId") String userId) {
+        SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
+        return new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu thành công", searchDTO);
+    }
+    // ===== end phần này của Hảo =====
 }

@@ -63,6 +63,21 @@ public class DocumentService {
     }
 
     /**
+     * Lấy tất cả tài liệu của một user cụ thể
+     * @param userId ID của user cần lấy tài liệu
+     * @return SearchDTO chứa danh sách tài liệu
+     */
+    public SearchDTO getDocumentsByUserId(String userId) {
+        List<Document> res = new ArrayList<>();
+        try {
+            res.addAll(documentDao.getDocumentsByUserId(userId));
+        } catch (ExecutionException | InterruptedException e) {
+            throw new BusinessException("Error while getting documents by user ID", e.getCause());
+        }
+        return new SearchDTO(res);
+    }
+
+    /**
      * Lấy thông tin chi tiết tài liệu theo ID và chuyển thành DTO
      * @param documentId ID của tài liệu cần lấy
      * @return Optional chứa DocumentDTO nếu tồn tại, hoặc empty nếu không
