@@ -19,14 +19,9 @@ import org.springframework.beans.factory.annotation.Value;
 @RequestMapping("/document")
 public class DocumentController {
     private final DocumentService documentService;
-    private final Storage storage; // Thêm Storage để xử lý download
-    private final String bucketName;
 
-
-    public DocumentController(DocumentService documentService, Storage storage, @Value("${firebase.bucket-name}") String bucketName) {
+    public DocumentController(DocumentService documentService) {
         this.documentService = documentService;
-        this.storage = storage;
-        this.bucketName = bucketName;
     }
 
     @GetMapping( "/searchByTitle")
