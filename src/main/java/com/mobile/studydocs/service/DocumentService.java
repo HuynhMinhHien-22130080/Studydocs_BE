@@ -38,7 +38,7 @@ public class DocumentService {
         try{
             res.addAll(documentDao.getDocumentsByUniversity(university));}
         catch(ExecutionException | InterruptedException e){
-            throw new BusinessException("Error while searching by title",e.getCause());
+            throw new BusinessException("Error while searching by university",e.getCause());
         }
         return new SearchDTO(res);
     }
@@ -48,8 +48,10 @@ public class DocumentService {
         try{
             res.addAll(documentDao.getDocumentsBySubject(subject));}
         catch(ExecutionException | InterruptedException e){
-            throw new BusinessException("Error while searching by title",e.getCause());
+            System.out.println("da gui request lay tat ca doc");
+            throw new BusinessException("Error while searching by subject",e.getCause());
         }
+
         return new SearchDTO(res);
     }
     public SearchDTO getAll(){
@@ -57,7 +59,7 @@ public class DocumentService {
         try{
         res.addAll(documentDao.getAllDocuments());}
          catch(ExecutionException | InterruptedException e){
-             throw new BusinessException("Error while searching by title",e.getCause());
+             throw new BusinessException("Lỗi lấy tài liệu",e.getCause());
             }
         return new SearchDTO(res);
     }
@@ -130,4 +132,8 @@ public class DocumentService {
             return false;
         }
     }
+
+//    public boolean saveDocument(String idDocument) {
+//    return documentDao.saveDocument(idDocument);
+//    }
 }

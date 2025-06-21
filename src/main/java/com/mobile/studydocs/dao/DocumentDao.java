@@ -209,4 +209,8 @@ Lấy document theo university
         ApiFuture<WriteResult> future = likeRef.delete();
         return future.get() != null;
     }
+
+    public boolean saveDocument(String idDocument) {
+        return false;
+    }
 }
