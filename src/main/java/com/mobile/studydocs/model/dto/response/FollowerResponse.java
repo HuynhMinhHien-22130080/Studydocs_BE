@@ -1,7 +1,9 @@
-// package com.mobile.studydocs.model.dto.response;
 
-// import lombok.Builder;
+package com.mobile.studydocs.model.dto.response;
 
-// @Builder
-// public record FollowerResponse(String userId,String fullName, String avatarUrl) {
-// }
+import lombok.Builder;
+
+@Builder
+public record FollowerResponse(String userId,String fullName, String avatarUrl) {
+}
+

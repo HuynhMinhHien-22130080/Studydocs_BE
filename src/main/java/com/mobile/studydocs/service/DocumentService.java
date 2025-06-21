@@ -11,6 +11,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -52,6 +56,7 @@ public class DocumentService {
         }
         return new SearchDTO(res);
     }
+
     public SearchDTO getAll(){
         List<Document>res= new ArrayList<>();
         try{
@@ -88,7 +93,7 @@ public class DocumentService {
                             .map(like -> DocumentDTO.LikeDTO.builder()
                                     .userId(like.getUserId())
                                     .type(like.getType())
-                                    .createdAt(like.getCreatedAt())
+                                    .createAt(like.getCreateAt())
                                     .build())
                             .collect(Collectors.toList()) : null)
                     .build();
