@@ -30,15 +30,18 @@ public class UserDocumentController {
     }
 
     @GetMapping("/detail/{documentId}")
-    public ResponseEntity<BaseResponse> getDocumentDetail(@PathVariable String documentId,
-                                                          @RequestAttribute("userId") String userId) {
-        if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new BaseResponse(HttpStatus.UNAUTHORIZED.value(), "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập.", null));
-        }
-        Optional<DocumentDTO> dto = documentService.getDocumentById(documentId);
-        return ResponseEntity.ok(new BaseResponse(HttpStatus.OK.value(), "Lấy chi tiết tài liệu thành công", dto));
+    public ResponseEntity<BaseResponse> getDocumentDetail(@PathVariable String documentId) {
+        var optionalDoc = documentService.getDocumentById(documentId);
+        System.out.println("Doc found? " + optionalDoc.isPresent());
+        optionalDoc.ifPresent(doc -> System.out.println("Doc DTO: " + doc));
+
+        return optionalDoc
+                .map(dto -> ResponseEntity.status(HttpStatus.OK)
+                        .body(new BaseResponse(HttpStatus.OK.value(), "Lấy chi tiết tài liệu thành công", dto)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new BaseResponse(HttpStatus.NOT_FOUND.value(), "Tài liệu không tồn tại", null)));
     }
+
 
     @GetMapping("/download/{documentId}")
     public ResponseEntity<BaseResponse> getDownloadUrl(@PathVariable String documentId, @RequestAttribute("userId") String userId) {

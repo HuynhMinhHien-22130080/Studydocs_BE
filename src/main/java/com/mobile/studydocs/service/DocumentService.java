@@ -93,7 +93,7 @@ public class DocumentService {
                             .map(like -> DocumentDTO.LikeDTO.builder()
                                     .userId(like.getUserId())
                                     .type(like.getType())
-                                    .createAt(like.getCreateAt())
+                                    .createdAt(like.getCreatedAt())
                                     .build())
                             .collect(Collectors.toList()) : null)
                     .build();
