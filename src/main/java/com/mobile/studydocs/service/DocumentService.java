@@ -1,5 +1,6 @@
 package com.mobile.studydocs.service;
 
+import com.google.cloud.Timestamp;
 import com.mobile.studydocs.dao.DocumentDao;
 import com.mobile.studydocs.exception.BusinessException;
 import com.mobile.studydocs.model.dto.DocumentDTO;
@@ -9,8 +10,6 @@ import com.mobile.studydocs.model.entity.Document;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.cloud.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -75,7 +74,6 @@ public class DocumentService {
     }
 
 
-
     /**
      * Lấy thông tin chi tiết tài liệu theo ID và chuyển thành DTO
      * @param documentId ID của tài liệu cần lấy
@@ -109,7 +107,7 @@ public class DocumentService {
 
             return Optional.of(dto);
         } catch (Exception e) {
-            return Optional.empty();
+            throw new RuntimeException(e.getMessage(), e.getCause());
         }
     }
 
@@ -146,7 +144,10 @@ public class DocumentService {
         // 1. Upload file lên Firebase Storage
         String fileName = firebaseStorageService.uploadFile(file);
         document.setFileUrl(fileName);
-        document.setCreatedAt(com.google.cloud.Timestamp.of(new Timestamp(System.currentTimeMillis())));
+        long millis = System.currentTimeMillis();
+        long seconds = millis / 1000;
+        int nanos = (int) ((millis % 1000) * 1_000_000); // phần dư ms chuyển sang nanoseconds
+        document.setCreatedAt(Timestamp.ofTimeSecondsAndNanos(seconds, nanos));
         document.setIsDelete(false);
         // 2. Lưu document vào Firestore
         documentDao.save(document);

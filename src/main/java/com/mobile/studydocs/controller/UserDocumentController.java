@@ -29,18 +29,6 @@ public class UserDocumentController {
         this.bucketName = bucketName;
     }
 
-    @GetMapping("/detail/{documentId}")
-    public ResponseEntity<BaseResponse> getDocumentDetail(@PathVariable String documentId) {
-        var optionalDoc = documentService.getDocumentById(documentId);
-        System.out.println("Doc found? " + optionalDoc.isPresent());
-        optionalDoc.ifPresent(doc -> System.out.println("Doc DTO: " + doc));
-
-        return optionalDoc
-                .map(dto -> ResponseEntity.status(HttpStatus.OK)
-                        .body(new BaseResponse(HttpStatus.OK.value(), "Lấy chi tiết tài liệu thành công", dto)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new BaseResponse(HttpStatus.NOT_FOUND.value(), "Tài liệu không tồn tại", null)));
-    }
 
 
     @GetMapping("/download/{documentId}")

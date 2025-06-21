@@ -20,7 +20,7 @@ public class FirebaseAuthentication extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.startsWith("/auth")||path.startsWith("/controller");
+        return path.startsWith("/auth")||path.startsWith("/document");
     }
 
     @Override

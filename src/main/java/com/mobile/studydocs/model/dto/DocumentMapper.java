@@ -28,7 +28,7 @@ public class DocumentMapper {
                                 .map(like -> DocumentDTO.LikeDTO.builder()
                                         .userId(like.getUserId())
                                         .type(like.getType())
-                                        .createAt(like.getCreateAt())
+                                        .createdAt(like.getCreatedAt())
                                         .build())
                                 .collect(Collectors.toList()))
                 .build();
