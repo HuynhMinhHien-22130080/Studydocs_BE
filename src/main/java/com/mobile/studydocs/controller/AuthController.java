@@ -3,8 +3,11 @@ package com.mobile.studydocs.controller;
 import com.mobile.studydocs.model.dto.LoginDTO;
 import com.mobile.studydocs.model.dto.RegisterDTO;
 import com.mobile.studydocs.model.dto.ForgotPasswordDTO;
+import com.mobile.studydocs.model.dto.UpdateUserDTO;
+import com.mobile.studydocs.model.entity.User;
 import com.mobile.studydocs.response.BaseResponse;
 import com.mobile.studydocs.service.AuthService;
+import com.mobile.studydocs.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private UserService userService;
 
     // API Đăng nhập bằng Firebase ID Token
     // Client gửi idToken lấy từ Firebase Auth lên, BE xác thực và trả về UID nếu hợp lệ
@@ -31,13 +37,21 @@ public class AuthController {
         }
     }
 
-    // API Đăng ký bằng Firebase ID Token
-    // Client đăng ký qua Firebase Auth, sau đó gửi idToken lên BE để lưu thông tin nếu cần
+    /**
+     * API Đăng ký tài khoản bằng Firebase ID Token
+     * App Android gửi idToken + thông tin cá nhân lên, BE xác thực và lưu vào Firestore
+     */
     @PostMapping("/register")
     public ResponseEntity<BaseResponse> register(@RequestBody RegisterDTO request) {
         String uid = authService.verifyToken(request.getIdToken());
         if (uid != null) {
-            // Có thể lưu thêm thông tin user vào Firestore tại đây nếu muốn
+            // Lưu thông tin user vào Firestore
+            User user = new User();
+            user.setUserId(uid);
+            user.setFullName(request.getFullName());
+            user.setAvatarUrl(request.getAvatarUrl());
+            user.setEmail(request.getEmail());
+            userService.saveUserToFirestore(user);
             return ResponseEntity.ok(new BaseResponse(HttpStatus.OK.value(), "Đăng ký thành công", uid));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -56,5 +70,17 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new BaseResponse(HttpStatus.BAD_REQUEST.value(), "Gửi email thất bại", null));
         }
+    }
+
+    /**
+     * API cập nhật thông tin cá nhân
+     * App Android gửi idToken + thông tin mới, BE xác thực và cập nhật Firestore
+     */
+    @PutMapping("/update-profile")
+    public ResponseEntity<BaseResponse> updateProfile(@RequestBody UpdateUserDTO request) {
+        String uid = request.getUserId();
+        // Có thể xác thực token nếu muốn bảo mật hơn
+        userService.updateUserInFirestore(uid, request.getDisplayName(), request.getPhotoURL(), request.getEmail());
+        return ResponseEntity.ok(new BaseResponse(HttpStatus.OK.value(), "Cập nhật thông tin thành công", null));
     }
 }

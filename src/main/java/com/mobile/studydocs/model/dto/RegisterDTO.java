@@ -1,5 +1,4 @@
 package com.mobile.studydocs.model.dto;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,7 +12,18 @@ import lombok.NoArgsConstructor;
 public class RegisterDTO {
     private String idToken;
 
+    private String fullName;
+    private String avatarUrl;
+    private String email;
+
+
     // Getter, Setter
     public String getIdToken() { return idToken; }
     public void setIdToken(String idToken) { this.idToken = idToken; }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 }
