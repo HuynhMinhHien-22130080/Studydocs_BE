@@ -2,6 +2,7 @@ package com.mobile.studydocs.exception;
 
 import com.google.api.client.http.HttpStatusCodes;
 import com.mobile.studydocs.response.BaseResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     /**
@@ -36,6 +38,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<BaseResponse> handleException(Exception e) {
+        log.error("Unhandled Exception: ", e); // Log full stack trace
         return ResponseEntity.status(HttpStatusCodes.STATUS_CODE_SERVER_ERROR)
                 .body(new BaseResponse(HttpStatusCodes.STATUS_CODE_SERVER_ERROR,
                         "Đã xảy ra lỗi không mong muốn: " + e.getMessage(), null));
