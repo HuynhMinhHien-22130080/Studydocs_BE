@@ -2,12 +2,24 @@ package com.mobile.studydocs.dao;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
+
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.*;
+import com.google.firebase.cloud.FirestoreClient;
+import com.mobile.studydocs.model.dto.SearchDTO;
 import com.mobile.studydocs.model.entity.Document;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Component
@@ -21,77 +33,118 @@ public class DocumentDao {
 
     public List<Document> getAllDocuments() throws ExecutionException, InterruptedException {
         List<Document> result = new ArrayList<>();
-        Firestore db = FirestoreClient.getFirestore();
-        ApiFuture<QuerySnapshot> future = db.collection(DOCUMENTS_COLLECTION)
+        Firestore db= FirestoreClient.getFirestore();
+        // Truy vấn tất cả document có isDelete = false
+        ApiFuture<QuerySnapshot> future = db.collection("documents")
                 .whereEqualTo("isDelete", false)
                 .get();
+
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
         for (QueryDocumentSnapshot docSnap : documents) {
             Document doc = docSnap.toObject(Document.class);
             result.add(doc);
         }
+
         return result;
     }
-
+    /*
+    Lấy document theo id doccument
+    */
     public List<Document> getDocumentsByUserID(String userID) throws ExecutionException, InterruptedException {
         List<Document> result = new ArrayList<>();
-        Firestore db = FirestoreClient.getFirestore();
-        ApiFuture<QuerySnapshot> future = db.collection(DOCUMENTS_COLLECTION)
-                .whereEqualTo("isDelete", false)
-                .whereEqualTo("userId", userID)
+        Firestore db= FirestoreClient.getFirestore();
+        // Truy vấn tất cả document có isDelete = false và userID trùng khớp
+        ApiFuture<QuerySnapshot> future = db.collection("documents")
+                .whereEqualTo("isDelete", false).whereEqualTo("userId",userID)
                 .get();
+
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
         for (QueryDocumentSnapshot docSnap : documents) {
             Document doc = docSnap.toObject(Document.class);
             result.add(doc);
         }
+
         return result;
     }
-
+    /*
+    Lấy document theo title
+    */
     public List<Document> getDocumentsByTitle(String title) throws ExecutionException, InterruptedException {
         List<Document> result = new ArrayList<>();
         Firestore db = FirestoreClient.getFirestore();
-        ApiFuture<QuerySnapshot> future = db.collection(DOCUMENTS_COLLECTION)
+
+        ApiFuture<QuerySnapshot> future = db.collection("documents")
                 .whereEqualTo("isDelete", false)
-                .whereEqualTo("title", title)
                 .get();
+
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
         for (QueryDocumentSnapshot docSnap : documents) {
             Document doc = docSnap.toObject(Document.class);
-            result.add(doc);
+
+            if (doc.getTitle() != null &&
+                    doc.getTitle().trim().toLowerCase().contains(title.toLowerCase().trim())) {
+                result.add(doc);
+            }
         }
+
         return result;
     }
 
+    /*
+Lấy document theo subject
+*/
     public List<Document> getDocumentsBySubject(String subject) throws ExecutionException, InterruptedException {
         List<Document> result = new ArrayList<>();
         Firestore db = FirestoreClient.getFirestore();
-        ApiFuture<QuerySnapshot> future = db.collection(DOCUMENTS_COLLECTION)
+
+        ApiFuture<QuerySnapshot> future = db.collection("documents")
                 .whereEqualTo("isDelete", false)
-                .whereEqualTo("subject", subject)
+                .get();
+
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
+        for (QueryDocumentSnapshot docSnap : documents) {
+            Document doc = docSnap.toObject(Document.class);
+
+            if (doc.getSubject() != null &&
+                    doc.getSubject().trim().toLowerCase().contains(subject.toLowerCase().trim())) {
+                result.add(doc);
+            }
+        }
+
+        return result;
+    }
+
+    /*
+Lấy document theo university
+*/
+    public List<Document> getDocumentsByUniversity(String university) throws ExecutionException, InterruptedException {
+        List<Document> result = new ArrayList<>();
+        Firestore db = FirestoreClient.getFirestore();
+
+        // Truy vấn tất cả documents có isDelete = false
+        ApiFuture<QuerySnapshot> future = db.collection("documents")
+                .whereEqualTo("isDelete", false)
                 .get();
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
         for (QueryDocumentSnapshot docSnap : documents) {
             Document doc = docSnap.toObject(Document.class);
-            result.add(doc);
+
+            if (doc.getUniversity() != null &&
+                    doc.getUniversity().trim().toLowerCase().contains(university.toLowerCase().trim())) {
+
+                result.add(doc);
+            }
         }
         return result;
     }
 
-    public List<Document> getDocumentsByUniversity(String university) throws ExecutionException, InterruptedException {
-        List<Document> result = new ArrayList<>();
-        Firestore db = FirestoreClient.getFirestore();
-        ApiFuture<QuerySnapshot> future = db.collection(DOCUMENTS_COLLECTION)
-                .whereEqualTo("isDelete", false)
-                .whereEqualTo("university", university)
-                .get();
-        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-        for (QueryDocumentSnapshot docSnap : documents) {
-            Document doc = docSnap.toObject(Document.class);
-            result.add(doc);
-        }
-        return result;
-    }
+    /**
+     * Lấy Document theo ID, bao gồm subcollection "likes"
+     */
 
     public Document findById(String documentId) throws ExecutionException, InterruptedException {
         DocumentReference docRef = firestore.collection(DOCUMENTS_COLLECTION).document(documentId);
@@ -100,7 +153,10 @@ public class DocumentDao {
         if (!snapshot.exists()) {
             return null;
         }
+        // Map dữ liệu chính
         Document doc = snapshot.toObject(Document.class);
+
+        // Lấy subcollection likes
         ApiFuture<QuerySnapshot> likesSnap = docRef.collection("likes").get();
         likesSnap.get().getDocuments().forEach(ds -> {
             Document.Like like = ds.toObject(Document.Like.class);
@@ -133,4 +189,16 @@ public class DocumentDao {
         ApiFuture<WriteResult> future = likeRef.delete();
         return future.get() != null;
     }
+
+    // ===== hao lam phần này (upload document + file) =====
+    /**
+     * Lưu document mới vào Firestore
+     */
+    public void save(Document document) throws Exception {
+        Firestore db = FirestoreClient.getFirestore();
+        String docId = document.getId() != null ? document.getId() : db.collection(DOCUMENTS_COLLECTION).document().getId();
+        document.setId(docId);
+        db.collection(DOCUMENTS_COLLECTION).document(docId).set(document).get();
+    }
+    // ===== end hao lam phần này =====
 }
