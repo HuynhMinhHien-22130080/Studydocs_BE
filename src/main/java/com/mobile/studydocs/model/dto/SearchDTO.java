@@ -8,8 +8,12 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class SearchDTO {
-List<Document> documents;
+    private List<Document> documents;
+
+    public SearchDTO(List<Document> documents) {
+        this.documents = documents;
+    }
 }
+

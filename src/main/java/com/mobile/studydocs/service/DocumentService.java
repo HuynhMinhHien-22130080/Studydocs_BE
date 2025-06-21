@@ -25,43 +25,39 @@ public class DocumentService {
         this.documentDao = documentDao;
     }
 
-    public SearchDTO searchByTitle(String title)  {
-        List<Document>res= new ArrayList<>();
-        try{
-        res.addAll(documentDao.getDocumentsByTitle(title));}
-        catch(ExecutionException | InterruptedException e){
-            throw new BusinessException("Error while searching by title",e.getCause());
+    public SearchDTO searchByTitle(String title) {
+        try {
+            List<Document> docs = documentDao.getDocumentsByTitle(title);
+            return new SearchDTO(docs); // ← dùng constructor mới thêm
+        } catch (ExecutionException | InterruptedException e) {
+            throw new BusinessException("Error while searching by title", e.getCause());
         }
-        return new SearchDTO(res);
-    }
-    public SearchDTO searchByUniversity(String university)  {
-        List<Document>res= new ArrayList<>();
-        try{
-            res.addAll(documentDao.getDocumentsByUniversity(university));}
-        catch(ExecutionException | InterruptedException e){
-            throw new BusinessException("Error while searching by title",e.getCause());
-        }
-        return new SearchDTO(res);
     }
 
-    public SearchDTO searchBySubject(String subject)  {
-        List<Document>res= new ArrayList<>();
-        try{
-            res.addAll(documentDao.getDocumentsBySubject(subject));}
-        catch(ExecutionException | InterruptedException e){
-            throw new BusinessException("Error while searching by title",e.getCause());
+    public SearchDTO searchByUniversity(String university) {
+        try {
+            return new SearchDTO(documentDao.getDocumentsByUniversity(university));
+        } catch (ExecutionException | InterruptedException e) {
+            throw new BusinessException("Error while searching by university", e.getCause());
         }
-        return new SearchDTO(res);
     }
-    public SearchDTO getAll(String userID){
-        List<Document>res= new ArrayList<>();
-        try{
-        res.addAll(documentDao.getAllDocuments());}
-         catch(ExecutionException | InterruptedException e){
-             throw new BusinessException("Error while searching by title",e.getCause());
-            }
-        return new SearchDTO(res);
+
+    public SearchDTO searchBySubject(String subject) {
+        try {
+            return new SearchDTO(documentDao.getDocumentsBySubject(subject));
+        } catch (ExecutionException | InterruptedException e) {
+            throw new BusinessException("Error while searching by subject", e.getCause());
+        }
     }
+
+    public SearchDTO getAll() {
+        try {
+            return new SearchDTO(documentDao.getAllDocuments());
+        } catch (ExecutionException | InterruptedException e) {
+            throw new BusinessException("Error while getting all documents", e.getCause());
+        }
+    }
+
 
     public DocumentDTO getDocumentById(String documentId) {
         try {
@@ -86,7 +82,7 @@ public class DocumentService {
                             .map(like -> DocumentDTO.LikeDTO.builder()
                                     .userId(like.getUserId())
                                     .type(like.getType())
-                                    .createAt(like.getCreateAt())
+                                    .createdAt(like.getCreatedAt())
                                     .build())
                             .collect(Collectors.toList()) : null)
                     .build();

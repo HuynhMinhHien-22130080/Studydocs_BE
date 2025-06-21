@@ -1,7 +1,8 @@
 package com.mobile.studydocs.model.dto;
 
 import lombok.*;
-import java.sql.Timestamp;
+import com.google.cloud.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -20,7 +21,8 @@ public class DocumentDTO {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private Timestamp deletedAt;
-    private List<LikeDTO> likes;
+    @Builder.Default
+    private List<LikeDTO> likes = new ArrayList<>();
 
     @Data
     @NoArgsConstructor
@@ -29,6 +31,6 @@ public class DocumentDTO {
     public static class LikeDTO {
         private String userId;
         private String type;
-        private Timestamp createAt;
+        private Timestamp createdAt;
     }
 }
