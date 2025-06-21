@@ -11,7 +11,8 @@ import com.mobile.studydocs.model.dto.SearchDTO;
 import com.mobile.studydocs.model.entity.Document;
 import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
+//import java.sql.Timestamp;
+import com.google.cloud.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
+import com.mobile.studydocs.exception.BusinessException;
+import com.mobile.studydocs.exception.ResourceNotFoundException;
 
 @Component
 public class DocumentDao {
@@ -38,23 +42,24 @@ public class DocumentDao {
 /*
 Lấy document theo user id
 */
-    public List<Document> getAllDocuments() throws ExecutionException, InterruptedException {
-        List<Document> result = new ArrayList<>();
-        Firestore db= FirestoreClient.getFirestore();
-        // Truy vấn tất cả document có isDelete = false
-        ApiFuture<QuerySnapshot> future = db.collection("documents")
-                .whereEqualTo("isDelete", false)
-                .get();
+public List<Document> getAllDocuments() throws ExecutionException, InterruptedException {
+    List<Document> result = new ArrayList<>();
+    Firestore db = FirestoreClient.getFirestore();
 
-        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+    ApiFuture<QuerySnapshot> future = db.collection("documents")
+            .whereEqualTo("isDelete", false)
+            .get();
 
-        for (QueryDocumentSnapshot docSnap : documents) {
-            Document doc = docSnap.toObject(Document.class);
-            result.add(doc);
-        }
+    List<QueryDocumentSnapshot> documents = future.get().getDocuments();
 
-        return result;
+    for (QueryDocumentSnapshot docSnap : documents) {
+        Document doc = docSnap.toObject(Document.class);
+        result.add(doc);
     }
+
+    return result;
+}
+
     /*
     Lấy document theo id doccument
     */
@@ -156,12 +161,18 @@ Lấy document theo university
      * Lấy Document theo ID, bao gồm subcollection "likes"
      */
     public Document findById(String documentId) throws ExecutionException, InterruptedException {
+        if (documentId == null || documentId.trim().isEmpty()) {
+            throw new BusinessException("Document ID is required", "DOCUMENT_ID_REQUIRED");
+        }
+
         DocumentReference docRef = firestore.collection("documents").document(documentId);
         ApiFuture<DocumentSnapshot> future = docRef.get();
         DocumentSnapshot snapshot = future.get();
+
         if (!snapshot.exists()) {
-            return null;
+            throw new ResourceNotFoundException("Document", "id", documentId);
         }
+
         // Map dữ liệu chính
         Document doc = snapshot.toObject(Document.class);
 
@@ -173,6 +184,23 @@ Lấy document theo university
         });
         return doc;
     }
+    //===== Phần này của hao =====
+    //lấy tất cả document của user
+    public List<Document> getDocumentsByUserId(String userId) throws ExecutionException, InterruptedException {
+        List<Document> result = new ArrayList<>();
+        Firestore db= FirestoreClient.getFirestore();
+        // Truy vấn tất cả document có isDelete = false và userID trùng khớp
+        ApiFuture<QuerySnapshot> future = db.collection("documents")
+                .whereEqualTo("isDelete", false).whereEqualTo("userId",userId)
+                .get();
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+        for (QueryDocumentSnapshot docSnap : documents) {
+            Document doc = docSnap.toObject(Document.class);
+            result.add(doc);
+        }
+        return result;
+    }
+    //===== end phần này của hao =====
 
     /**
      * Thêm một like vào subcollection "likes" của tài liệu
@@ -192,7 +220,7 @@ Lấy document theo university
         Document.Like like = Document.Like.builder()
                 .userId(userId)
                 .type("LIKE")
-                .createAt(Timestamp.from(Instant.now()))
+                .createAt(Timestamp.now())
                 .build();
         ApiFuture<WriteResult> future = likeRef.set(like);
         return future.get() != null;
@@ -214,4 +242,52 @@ Lấy document theo university
     public boolean saveDocument(String idDocument) {
         return false;
     }
+
+    // ===== hao lam phần này (upload document + file) =====
+    /**
+     * Lưu document mới vào Firestore
+     */
+    public void save(Document document) throws Exception {
+        // Validation với BusinessException
+        if (document == null) {
+            throw new BusinessException("Document cannot be null", "DOCUMENT_NULL");
+        }
+
+        if (document.getTitle() == null || document.getTitle().trim().isEmpty()) {
+            throw new BusinessException("Document title is required", "DOCUMENT_TITLE_REQUIRED");
+        }
+
+        if (document.getUserId() == null || document.getUserId().trim().isEmpty()) {
+            throw new BusinessException("User ID is required", "USER_ID_REQUIRED");
+        }
+
+        // Tự động tạo ID nếu chưa có
+        String docId = document.getId() != null ? document.getId() : firestore.collection(DOCUMENTS_COLLECTION).document().getId();
+
+        // Kiểm tra trùng lặp với BusinessException
+        if (document.getId() != null && firestore.collection(DOCUMENTS_COLLECTION).document(docId).get().get().exists()) {
+            throw new BusinessException("Document with ID " + docId + " already exists", "DOCUMENT_ALREADY_EXISTS");
+        }
+
+        document.setId(docId);
+
+        // Tự động set timestamp
+        Timestamp now = Timestamp.now();
+        if (document.getCreatedAt() == null) {
+            document.setCreatedAt(now);
+        }
+        document.setUpdatedAt(now);
+
+        // Đảm bảo isDelete = false cho document mới
+        if (document.getIsDelete() == null) {
+            document.setIsDelete(false);
+        }
+
+        try {
+            firestore.collection(DOCUMENTS_COLLECTION).document(docId).set(document).get();
+        } catch (Exception e) {
+            throw new BusinessException("Failed to save document: " + e.getMessage(), e);
+        }
+    }
+    // ===== end hao lam phần này =====
 }

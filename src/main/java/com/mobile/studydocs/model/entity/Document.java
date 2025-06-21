@@ -1,7 +1,7 @@
 package com.mobile.studydocs.model.entity;
 
 import lombok.*;
-import java.sql.Timestamp;
+import com.google.cloud.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 

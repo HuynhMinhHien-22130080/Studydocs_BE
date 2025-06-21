@@ -11,5 +11,5 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SearchDTO {
-List<Document> documents;
+    private List<DocumentDTO> documents;
 }
