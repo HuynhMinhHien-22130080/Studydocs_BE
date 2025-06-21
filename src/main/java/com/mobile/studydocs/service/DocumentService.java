@@ -62,17 +62,14 @@ public class DocumentService {
         return new SearchDTO(res);
     }
 
-    /**
-     * Lấy thông tin chi tiết tài liệu theo ID và chuyển thành DTO
-     * @param documentId ID của tài liệu cần lấy
-     * @return Optional chứa DocumentDTO nếu tồn tại, hoặc empty nếu không
-     */
-    public Optional<DocumentDTO> getDocumentById(String documentId) {
+    public DocumentDTO getDocumentById(String documentId) {
         try {
             Document entity = documentDao.findById(documentId);
-            if (entity == null) return Optional.empty();
+            if (entity == null) {
+                throw new BusinessException("Tài liệu không tồn tại");
+            }
 
-            DocumentDTO dto = DocumentDTO.builder()
+            return DocumentDTO.builder()
                     .id(entity.getId())
                     .userId(entity.getUserId())
                     .title(entity.getTitle())
@@ -92,42 +89,33 @@ public class DocumentService {
                                     .build())
                             .collect(Collectors.toList()) : null)
                     .build();
-
-            return Optional.of(dto);
         } catch (Exception e) {
-            return Optional.empty();
+            throw new BusinessException("Không thể lấy chi tiết tài liệu", e);
         }
     }
 
-    /**
-     * Thêm like cho tài liệu
-     * @param documentId ID của tài liệu
-     * @param userId ID của người dùng
-     * @return true nếu thành công, false nếu thất bại
-     */
-    public boolean likeDocument(String documentId, String userId) {
+
+    public void likeDocument(String documentId, String userId) {
         try {
             Document entity = documentDao.findById(documentId);
-            if (entity == null) return false;
-            return documentDao.addLike(documentId, userId);
+            if (entity == null) throw new BusinessException("Tài liệu không tồn tại");
+
+            boolean success = documentDao.addLike(documentId, userId);
+            if (!success) throw new BusinessException("Không thể thích tài liệu");
         } catch (Exception e) {
-            return false;
+            throw new BusinessException("Lỗi khi thích tài liệu", e);
         }
     }
 
-    /**
-     * Xóa like khỏi tài liệu
-     * @param documentId ID của tài liệu
-     * @param userId ID của người dùng
-     * @return true nếu thành công, false nếu thất bại
-     */
-    public boolean unlikeDocument(String documentId, String userId) {
+    public void unlikeDocument(String documentId, String userId) {
         try {
             Document entity = documentDao.findById(documentId);
-            if (entity == null) return false;
-            return documentDao.removeLike(documentId, userId);
+            if (entity == null) throw new BusinessException("Tài liệu không tồn tại");
+
+            boolean success = documentDao.removeLike(documentId, userId);
+            if (!success) throw new BusinessException("Không thể bỏ thích tài liệu");
         } catch (Exception e) {
-            return false;
+            throw new BusinessException("Lỗi khi bỏ thích tài liệu", e);
         }
     }
 }

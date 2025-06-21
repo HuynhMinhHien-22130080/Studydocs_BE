@@ -35,9 +35,9 @@ public class DocumentDao {
         this.firestore = firestore;
     }
 
-/*
-Lấy document theo user id
-*/
+    /*
+    Lấy document theo user id
+    */
     public List<Document> getAllDocuments() throws ExecutionException, InterruptedException {
         List<Document> result = new ArrayList<>();
         Firestore db= FirestoreClient.getFirestore();
