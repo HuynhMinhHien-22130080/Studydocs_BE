@@ -1,3 +1,4 @@
+
 package com.mobile.studydocs.model.dto.response;
 
 import com.mobile.studydocs.model.enums.FollowType;

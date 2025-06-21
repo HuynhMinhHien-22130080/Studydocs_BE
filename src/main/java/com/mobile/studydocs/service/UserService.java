@@ -33,5 +33,6 @@ public class UserService {
             .update("fullName", fullName,
                     "avatarUrl", avatarUrl,
                     "email", email);
+
     }
 }

@@ -11,9 +11,11 @@ import lombok.NoArgsConstructor;
 // idToken: Token xác thực lấy từ Firebase Auth
 public class RegisterDTO {
     private String idToken;
+
     private String fullName;
     private String avatarUrl;
     private String email;
+
 
     // Getter, Setter
     public String getIdToken() { return idToken; }

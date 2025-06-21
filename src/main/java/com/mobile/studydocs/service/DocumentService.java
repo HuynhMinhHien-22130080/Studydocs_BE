@@ -6,7 +6,9 @@ import com.mobile.studydocs.model.dto.DocumentDTO;
 import com.mobile.studydocs.model.dto.SearchDTO;
 import com.mobile.studydocs.model.entity.Document;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -20,9 +22,11 @@ import java.util.stream.Collectors;
 @Service
 public class DocumentService {
     private final DocumentDao documentDao;
+    private final FirebaseStorageService firebaseStorageService;
 
-    public DocumentService(DocumentDao documentDao) {
+    public DocumentService(DocumentDao documentDao, FirebaseStorageService firebaseStorageService) {
         this.documentDao = documentDao;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
     public SearchDTO searchByTitle(String title)  {
@@ -52,7 +56,8 @@ public class DocumentService {
         }
         return new SearchDTO(res);
     }
-    public SearchDTO getAll(String userID){
+
+    public SearchDTO getAll(){
         List<Document>res= new ArrayList<>();
         try{
         res.addAll(documentDao.getAllDocuments());}
@@ -130,4 +135,17 @@ public class DocumentService {
             return false;
         }
     }
+
+    // ===== hao lam phần này (upload document + file) =====
+    public Document uploadDocument(Document document, MultipartFile file) throws Exception {
+        // 1. Upload file lên Firebase Storage
+        String fileName = firebaseStorageService.uploadFile(file);
+        document.setFileUrl(fileName);
+        document.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        document.setIsDelete(false);
+        // 2. Lưu document vào Firestore
+        documentDao.save(document);
+        return document;
+    }
+    // ===== end hao lam phần này =====
 }
