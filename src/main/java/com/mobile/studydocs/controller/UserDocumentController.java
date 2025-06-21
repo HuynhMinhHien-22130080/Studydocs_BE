@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/user/document")
 public class UserDocumentController {
@@ -34,14 +36,14 @@ public class UserDocumentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new BaseResponse(HttpStatus.UNAUTHORIZED.value(), "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập.", null));
         }
-        DocumentDTO dto = documentService.getDocumentById(documentId);
+        Optional<DocumentDTO> dto = documentService.getDocumentById(documentId);
         return ResponseEntity.ok(new BaseResponse(HttpStatus.OK.value(), "Lấy chi tiết tài liệu thành công", dto));
     }
 
     @GetMapping("/download/{documentId}")
     public ResponseEntity<BaseResponse> getDownloadUrl(@PathVariable String documentId, @RequestAttribute("userId") String userId) {
-        DocumentDTO dto = documentService.getDocumentById(documentId);
-        String fileUrl = dto.getFileUrl();
+        Optional<DocumentDTO> dto = documentService.getDocumentById(documentId);
+        String fileUrl = dto.get().getFileUrl();
         if (fileUrl == null || fileUrl.isEmpty()) {
             throw new BusinessException("Tài liệu không có file để tải");
         }

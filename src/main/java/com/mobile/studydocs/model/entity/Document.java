@@ -1,6 +1,11 @@
 package com.mobile.studydocs.model.entity;
 
 import lombok.*;
+import lombok.Data;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
 import com.google.cloud.Timestamp;
 import java.util.ArrayList;
 import java.util.List;

@@ -88,7 +88,7 @@ public class DocumentService {
                             .map(like -> DocumentDTO.LikeDTO.builder()
                                     .userId(like.getUserId())
                                     .type(like.getType())
-                                    .createAt(like.getCreateAt())
+                                    .createdAt(like.getCreatedAt())
                                     .build())
                             .collect(Collectors.toList()) : null)
                     .build();
@@ -128,7 +128,7 @@ public class DocumentService {
         // 1. Upload file lên Firebase Storage
         String fileName = firebaseStorageService.uploadFile(file);
         document.setFileUrl(fileName);
-        document.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        document.setCreatedAt(com.google.cloud.Timestamp.of(new Timestamp(System.currentTimeMillis())));
         document.setIsDelete(false);
         // 2. Lưu document vào Firestore
         documentDao.save(document);
