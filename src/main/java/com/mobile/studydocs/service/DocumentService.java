@@ -33,7 +33,8 @@ public class DocumentService {
             throw new BusinessException("Error while searching by title",e.getCause());
         }
         return new SearchDTO(res);
-    }public SearchDTO searchByUniversity(String university)  {
+    }
+    public SearchDTO searchByUniversity(String university)  {
         List<Document>res= new ArrayList<>();
         try{
             res.addAll(documentDao.getDocumentsByUniversity(university));}
@@ -93,7 +94,6 @@ public class DocumentService {
             throw new BusinessException("Không thể lấy chi tiết tài liệu", e);
         }
     }
-
 
     public void likeDocument(String documentId, String userId) {
         try {
