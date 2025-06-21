@@ -69,6 +69,7 @@ Lấy document theo user id
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
 
         for (QueryDocumentSnapshot docSnap : documents) {
+
             Document doc = docSnap.toObject(Document.class);
             result.add(doc);
         }
