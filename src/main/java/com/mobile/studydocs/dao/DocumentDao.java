@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 //import java.sql.Timestamp;
 import com.google.cloud.Timestamp;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,59 +29,56 @@ import com.mobile.studydocs.exception.ResourceNotFoundException;
 
 @Component
 public class DocumentDao {
-    // tên collection
-    private static final String DOCUMENTS_COLLECTION ="documents";
-
-
-
+    private static final String DOCUMENTS_COLLECTION = "documents";
     private final Firestore firestore;
+
     public DocumentDao(Firestore firestore) {
 
         this.firestore = firestore;
     }
 
-/*
-Lấy document theo user id
-*/
-public List<Document> getAllDocuments() throws ExecutionException, InterruptedException {
-    List<Document> result = new ArrayList<>();
-    Firestore db = FirestoreClient.getFirestore();
-
-    ApiFuture<QuerySnapshot> future = db.collection("documents")
-            .whereEqualTo("isDelete", false)
-            .get();
-
-    List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-
-    for (QueryDocumentSnapshot docSnap : documents) {
-        Document doc = docSnap.toObject(Document.class);
-        result.add(doc);
-    }
-
-    return result;
-}
-
     /*
-    Lấy document theo id doccument
+    Lấy document theo user id
     */
-    public List<Document> getDocumentsByUserID(String userID) throws ExecutionException, InterruptedException {
+    public List<Document> getAllDocuments() throws ExecutionException, InterruptedException {
         List<Document> result = new ArrayList<>();
-        Firestore db= FirestoreClient.getFirestore();
-        // Truy vấn tất cả document có isDelete = false và userID trùng khớp
+        Firestore db = FirestoreClient.getFirestore();
+
         ApiFuture<QuerySnapshot> future = db.collection("documents")
-                .whereEqualTo("isDelete", false).whereEqualTo("userId",userID)
+                .whereEqualTo("isDelete", false)
                 .get();
 
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
 
         for (QueryDocumentSnapshot docSnap : documents) {
-
             Document doc = docSnap.toObject(Document.class);
             result.add(doc);
         }
 
         return result;
     }
+
+    /*
+    Lấy document theo id doccument
+    */
+    public List<Document> getDocumentsByUserID(String userID) throws ExecutionException, InterruptedException {
+        List<Document> result = new ArrayList<>();
+        Firestore db = FirestoreClient.getFirestore();
+        // Truy vấn tất cả document có isDelete = false và userID trùng khớp
+        ApiFuture<QuerySnapshot> future = db.collection("documents")
+                .whereEqualTo("isDelete", false).whereEqualTo("userId", userID)
+                .get();
+
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
+        for (QueryDocumentSnapshot docSnap : documents) {
+            Document doc = docSnap.toObject(Document.class);
+            result.add(doc);
+        }
+
+        return result;
+    }
+
     /*
     Lấy document theo title
     */
@@ -142,9 +140,7 @@ Lấy document theo university
         ApiFuture<QuerySnapshot> future = db.collection("documents")
                 .whereEqualTo("isDelete", false)
                 .get();
-
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-
         for (QueryDocumentSnapshot docSnap : documents) {
             Document doc = docSnap.toObject(Document.class);
 
@@ -160,19 +156,14 @@ Lấy document theo university
     /**
      * Lấy Document theo ID, bao gồm subcollection "likes"
      */
-    public Document findById(String documentId) throws ExecutionException, InterruptedException {
-        if (documentId == null || documentId.trim().isEmpty()) {
-            throw new BusinessException("Document ID is required", "DOCUMENT_ID_REQUIRED");
-        }
 
-        DocumentReference docRef = firestore.collection("documents").document(documentId);
+    public Document findById(String documentId) throws ExecutionException, InterruptedException {
+        DocumentReference docRef = firestore.collection(DOCUMENTS_COLLECTION).document(documentId);
         ApiFuture<DocumentSnapshot> future = docRef.get();
         DocumentSnapshot snapshot = future.get();
-
         if (!snapshot.exists()) {
-            throw new ResourceNotFoundException("Document", "id", documentId);
+            return null;
         }
-
         // Map dữ liệu chính
         Document doc = snapshot.toObject(Document.class);
 
@@ -184,32 +175,9 @@ Lấy document theo university
         });
         return doc;
     }
-    //===== Phần này của hao =====
-    //lấy tất cả document của user
-    public List<Document> getDocumentsByUserId(String userId) throws ExecutionException, InterruptedException {
-        List<Document> result = new ArrayList<>();
-        Firestore db= FirestoreClient.getFirestore();
-        // Truy vấn tất cả document có isDelete = false và userID trùng khớp
-        ApiFuture<QuerySnapshot> future = db.collection("documents")
-                .whereEqualTo("isDelete", false).whereEqualTo("userId",userId)
-                .get();
-        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-        for (QueryDocumentSnapshot docSnap : documents) {
-            Document doc = docSnap.toObject(Document.class);
-            result.add(doc);
-        }
-        return result;
-    }
-    //===== end phần này của hao =====
 
-    /**
-     * Thêm một like vào subcollection "likes" của tài liệu
-     * @param documentId ID của tài liệu
-     * @param userId ID của người dùng thực hiện like
-     * @return true nếu thành công, false nếu thất bại
-     */
     public boolean addLike(String documentId, String userId) throws ExecutionException, InterruptedException {
-        DocumentReference docRef = firestore.collection("documents").document(documentId);
+        DocumentReference docRef = firestore.collection(DOCUMENTS_COLLECTION).document(documentId);
         CollectionReference likesRef = docRef.collection("likes");
         DocumentReference likeRef = likesRef.document(userId);
 
@@ -220,20 +188,14 @@ Lấy document theo university
         Document.Like like = Document.Like.builder()
                 .userId(userId)
                 .type("LIKE")
-                .createAt(Timestamp.now())
+                .createdAt(com.google.cloud.Timestamp.now())
                 .build();
         ApiFuture<WriteResult> future = likeRef.set(like);
         return future.get() != null;
     }
 
-    /**
-     * Xóa một like khỏi subcollection "likes" của tài liệu
-     * @param documentId ID của tài liệu
-     * @param userId ID của người dùng thực hiện unlike
-     * @return true nếu thành công, false nếu thất bại
-     */
     public boolean removeLike(String documentId, String userId) throws ExecutionException, InterruptedException {
-        DocumentReference docRef = firestore.collection("documents").document(documentId);
+        DocumentReference docRef = firestore.collection(DOCUMENTS_COLLECTION).document(documentId);
         DocumentReference likeRef = docRef.collection("likes").document(userId);
         ApiFuture<WriteResult> future = likeRef.delete();
         return future.get() != null;
@@ -244,6 +206,7 @@ Lấy document theo university
     }
 
     // ===== hao lam phần này (upload document + file) =====
+
     /**
      * Lưu document mới vào Firestore
      */

@@ -102,7 +102,7 @@ public class DocumentService {
                             .map(like -> DocumentDTO.LikeDTO.builder()
                                     .userId(like.getUserId())
                                     .type(like.getType())
-                                    .createAt(like.getCreateAt())
+                                    .createdAt(like.getCreatedAt())
                                     .build())
                             .collect(Collectors.toList()) : null)
                     .build();
@@ -113,35 +113,27 @@ public class DocumentService {
         }
     }
 
-    /**
-     * Thêm like cho tài liệu
-     * @param documentId ID của tài liệu
-     * @param userId ID của người dùng
-     * @return true nếu thành công, false nếu thất bại
-     */
-    public boolean likeDocument(String documentId, String userId) {
+    public void likeDocument(String documentId, String userId) {
         try {
             Document entity = documentDao.findById(documentId);
-            if (entity == null) return false;
-            return documentDao.addLike(documentId, userId);
+            if (entity == null) throw new BusinessException("Tài liệu không tồn tại");
+
+            boolean success = documentDao.addLike(documentId, userId);
+            if (!success) throw new BusinessException("Không thể thích tài liệu");
         } catch (Exception e) {
-            return false;
+            throw new BusinessException("Lỗi khi thích tài liệu", e);
         }
     }
 
-    /**
-     * Xóa like khỏi tài liệu
-     * @param documentId ID của tài liệu
-     * @param userId ID của người dùng
-     * @return true nếu thành công, false nếu thất bại
-     */
-    public boolean unlikeDocument(String documentId, String userId) {
+    public void unlikeDocument(String documentId, String userId) {
         try {
             Document entity = documentDao.findById(documentId);
-            if (entity == null) return false;
-            return documentDao.removeLike(documentId, userId);
+            if (entity == null) throw new BusinessException("Tài liệu không tồn tại");
+
+            boolean success = documentDao.removeLike(documentId, userId);
+            if (!success) throw new BusinessException("Không thể bỏ thích tài liệu");
         } catch (Exception e) {
-            return false;
+            throw new BusinessException("Lỗi khi bỏ thích tài liệu", e);
         }
     }
 
@@ -154,7 +146,7 @@ public class DocumentService {
         // 1. Upload file lên Firebase Storage
         String fileName = firebaseStorageService.uploadFile(file);
         document.setFileUrl(fileName);
-//        document.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        document.setCreatedAt(com.google.cloud.Timestamp.of(new Timestamp(System.currentTimeMillis())));
         document.setIsDelete(false);
         // 2. Lưu document vào Firestore
         documentDao.save(document);

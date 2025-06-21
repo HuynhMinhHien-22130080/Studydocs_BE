@@ -31,6 +31,6 @@ public class Document {
     public static class Like {
         private String userId;
         private String type;
-        private Timestamp createAt;
+        private Timestamp createdAt;
     }
 }

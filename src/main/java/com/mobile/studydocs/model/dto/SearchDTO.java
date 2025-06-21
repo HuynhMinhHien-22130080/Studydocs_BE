@@ -13,3 +13,4 @@ import java.util.List;
 public class SearchDTO {
     private List<DocumentDTO> documents;
 }
+
