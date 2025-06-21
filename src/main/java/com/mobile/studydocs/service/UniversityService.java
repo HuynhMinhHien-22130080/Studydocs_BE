@@ -30,4 +30,10 @@ public class UniversityService {
         return universityDao.addSubject(universityId, subjectName);
     }
     // ===== end hao lam phần này =====
+
+    // ===== hao lam phần này (get university by id) =====
+    public University getUniversityById(String universityId) throws Exception {
+        return universityDao.getUniversityById(universityId);
+    }
+    // ===== end hao lam phần này =====
 }

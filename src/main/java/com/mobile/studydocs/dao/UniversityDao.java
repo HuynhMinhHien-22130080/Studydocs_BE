@@ -80,4 +80,12 @@ public class UniversityDao {
     }
     // ===== end hao lam phần này =====
 
+    // ===== hao lam phần này (get university by id) =====
+    public University getUniversityById(String universityId) throws ExecutionException, InterruptedException {
+        Firestore db = FirestoreClient.getFirestore();
+        DocumentReference universityRef = db.collection(UNIVERSITIES_COLLECTION).document(universityId);
+        DocumentSnapshot documentSnapshot = universityRef.get().get();
+        return documentSnapshot.toObject(University.class);
+    }
+    // ===== end hao lam phần này =====
 }

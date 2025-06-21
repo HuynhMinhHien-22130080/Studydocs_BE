@@ -3,12 +3,13 @@ package com.mobile.studydocs.service;
 import com.mobile.studydocs.dao.DocumentDao;
 import com.mobile.studydocs.exception.BusinessException;
 import com.mobile.studydocs.model.dto.DocumentDTO;
+import com.mobile.studydocs.model.dto.DocumentMapper;
 import com.mobile.studydocs.model.dto.SearchDTO;
 import com.mobile.studydocs.model.entity.Document;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.Timestamp;
+import com.google.cloud.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,42 +26,55 @@ public class DocumentService {
         this.firebaseStorageService = firebaseStorageService;
     }
 
-    public SearchDTO searchByTitle(String title)  {
-        List<Document>res= new ArrayList<>();
-        try{
-        res.addAll(documentDao.getDocumentsByTitle(title));}
-        catch(ExecutionException | InterruptedException e){
-            throw new BusinessException("Error while searching by title",e.getCause());
+    public SearchDTO searchByTitle(String title) {
+        try {
+            List<Document> docs = documentDao.getDocumentsByTitle(title);
+            List<DocumentDTO> dtos = docs.stream()
+                    .map(DocumentMapper::toDTO)
+                    .toList();
+            return new SearchDTO(dtos);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new BusinessException("Error while searching by title", e.getCause());
         }
-        return new SearchDTO(res);
-    }public SearchDTO searchByUniversity(String university)  {
-        List<Document>res= new ArrayList<>();
-        try{
-            res.addAll(documentDao.getDocumentsByUniversity(university));}
-        catch(ExecutionException | InterruptedException e){
-            throw new BusinessException("Error while searching by title",e.getCause());
-        }
-        return new SearchDTO(res);
     }
 
-    public SearchDTO searchBySubject(String subject)  {
-        List<Document>res= new ArrayList<>();
-        try{
-            res.addAll(documentDao.getDocumentsBySubject(subject));}
-        catch(ExecutionException | InterruptedException e){
-            throw new BusinessException("Error while searching by title",e.getCause());
+    public SearchDTO searchByUniversity(String university) {
+        try {
+            List<Document> docs = documentDao.getDocumentsByUniversity(university);
+            List<DocumentDTO> dtos = docs.stream()
+                    .map(DocumentMapper::toDTO)
+                    .toList();
+            return new SearchDTO(dtos);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new BusinessException("Error while searching by university", e.getCause());
         }
-        return new SearchDTO(res);
     }
-    public SearchDTO getAll(){
-        List<Document>res= new ArrayList<>();
-        try{
-        res.addAll(documentDao.getAllDocuments());}
-         catch(ExecutionException | InterruptedException e){
-             throw new BusinessException("Error while searching by title",e.getCause());
-            }
-        return new SearchDTO(res);
+
+    public SearchDTO searchBySubject(String subject) {
+        try {
+            List<Document> docs = documentDao.getDocumentsBySubject(subject);
+            List<DocumentDTO> dtos = docs.stream()
+                    .map(DocumentMapper::toDTO)
+                    .toList();
+            return new SearchDTO(dtos);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new BusinessException("Error while searching by subject", e.getCause());
+        }
     }
+
+    public SearchDTO getAll() {
+        try {
+            List<Document> docs = documentDao.getAllDocuments();
+            List<DocumentDTO> dtoList = docs.stream()
+                    .map(DocumentMapper::toDTO) // map qua DTO
+                    .collect(Collectors.toList());
+            return new SearchDTO(dtoList);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new BusinessException("Error while getting all documents", e.getCause());
+        }
+    }
+
+
 
     /**
      * Lấy thông tin chi tiết tài liệu theo ID và chuyển thành DTO
@@ -131,12 +145,16 @@ public class DocumentService {
         }
     }
 
+//    public boolean saveDocument(String idDocument) {
+//    return documentDao.saveDocument(idDocument);
+//    }
+
     // ===== hao lam phần này (upload document + file) =====
     public Document uploadDocument(Document document, MultipartFile file) throws Exception {
         // 1. Upload file lên Firebase Storage
         String fileName = firebaseStorageService.uploadFile(file);
         document.setFileUrl(fileName);
-        document.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+//        document.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         document.setIsDelete(false);
         // 2. Lưu document vào Firestore
         documentDao.save(document);
