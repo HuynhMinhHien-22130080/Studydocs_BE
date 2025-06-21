@@ -28,21 +28,18 @@ public class UserDocumentController {
     }
 
     @GetMapping("/detail/{documentId}")
-    public ResponseEntity<BaseResponse> getDocumentDetail(@PathVariable String documentId, @RequestParam("userId") String userId) {
+    public ResponseEntity<BaseResponse> getDocumentDetail(@PathVariable String documentId,
+                                                          @RequestAttribute("userId") String userId) {
         if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new BaseResponse(HttpStatus.BAD_REQUEST.value(), "userId không được để trống", null));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new BaseResponse(HttpStatus.UNAUTHORIZED.value(), "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập.", null));
         }
         DocumentDTO dto = documentService.getDocumentById(documentId);
         return ResponseEntity.ok(new BaseResponse(HttpStatus.OK.value(), "Lấy chi tiết tài liệu thành công", dto));
     }
 
     @GetMapping("/download/{documentId}")
-    public ResponseEntity<BaseResponse> getDownloadUrl(@PathVariable String documentId, @RequestParam("userId") String userId) {
-        if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new BaseResponse(HttpStatus.BAD_REQUEST.value(), "userId không được để trống", null));
-        }
+    public ResponseEntity<BaseResponse> getDownloadUrl(@PathVariable String documentId, @RequestAttribute("userId") String userId) {
         DocumentDTO dto = documentService.getDocumentById(documentId);
         String fileUrl = dto.getFileUrl();
         if (fileUrl == null || fileUrl.isEmpty()) {
@@ -59,21 +56,13 @@ public class UserDocumentController {
     }
 
     @PostMapping("/{documentId}/like")
-    public ResponseEntity<BaseResponse> likeDocument(@PathVariable String documentId, @RequestParam("userId") String userId) {
-        if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new BaseResponse(HttpStatus.BAD_REQUEST.value(), "userId không được để trống", null));
-        }
+    public ResponseEntity<BaseResponse> likeDocument(@PathVariable String documentId, @RequestAttribute("userId") String userId) {
         documentService.likeDocument(documentId, userId);
         return ResponseEntity.ok(new BaseResponse(HttpStatus.OK.value(), "Thích tài liệu thành công", true));
     }
 
     @DeleteMapping("/{documentId}/like")
-    public ResponseEntity<BaseResponse> unlikeDocument(@PathVariable String documentId, @RequestParam("userId") String userId) {
-        if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new BaseResponse(HttpStatus.BAD_REQUEST.value(), "userId không được để trống", null));
-        }
+    public ResponseEntity<BaseResponse> unlikeDocument(@PathVariable String documentId, @RequestAttribute("userId") String userId) {
         documentService.unlikeDocument(documentId, userId);
         return ResponseEntity.ok(new BaseResponse(HttpStatus.OK.value(), "Bỏ thích tài liệu thành công", true));
     }
