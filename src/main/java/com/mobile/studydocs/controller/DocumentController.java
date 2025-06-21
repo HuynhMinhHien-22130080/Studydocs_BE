@@ -61,13 +61,13 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
-//    @GetMapping( "/saveDocument")
-//    public ResponseEntity<BaseResponse> saveDocument(@RequestParam("keyword") String idDocument ){
-//        boolean success = documentService.saveDocument(idDocument);
-//        System.out.println("save doc: "+idDocument);
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", success));
-//    }
+    @GetMapping( "/saveToLibrary")
+    public ResponseEntity<BaseResponse> saveDocument(@RequestParam("keyword") String idDocument,@RequestAttribute("userId") String userid ){
+        boolean success = documentService.saveToLibrary(idDocument,userid);
+        System.out.println("save doc: "+idDocument);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", success));
+    }
     // ===== hao lam phần này (upload document + file) =====
     /**
      * Upload document metadata + file to Firebase Storage and Firestore

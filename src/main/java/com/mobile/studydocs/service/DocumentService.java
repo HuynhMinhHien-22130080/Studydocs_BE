@@ -135,9 +135,9 @@ public class DocumentService {
         }
     }
 
-//    public boolean saveDocument(String idDocument) {
-//    return documentDao.saveDocument(idDocument);
-//    }
+    public boolean saveToLibrary(String idDocument, String userid) {
+    return documentDao.saveToLibrary(idDocument,userid);
+    }
 
     // ===== hao lam phần này (upload document + file) =====
     public Document uploadDocument(Document document, MultipartFile file) throws Exception {

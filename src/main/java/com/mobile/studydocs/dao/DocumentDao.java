@@ -201,9 +201,22 @@ Lấy document theo university
         return future.get() != null;
     }
 
-    public boolean saveDocument(String idDocument) {
-        return false;
+    public boolean saveToLibrary(String userId, String idDocument) {
+        Firestore firestore = FirestoreClient.getFirestore();
+        DocumentReference userDocRef = firestore.collection("user").document(userId);
+
+        // Thêm document ID vào mảng "save"
+        ApiFuture<WriteResult> future = userDocRef.update("save", FieldValue.arrayUnion(idDocument));
+
+        try {
+            future.get(); // Chờ thao tác hoàn tất (có thể bỏ nếu không cần đồng bộ)
+            return true;
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
+
 
     // ===== hao lam phần này (upload document + file) =====
 
