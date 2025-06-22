@@ -5,12 +5,15 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.mobile.studydocs.exception.BusinessException;
 import com.mobile.studydocs.model.dto.DocumentDTO;
+import com.mobile.studydocs.model.dto.SearchDTO;
+import com.mobile.studydocs.model.entity.Document;
 import com.mobile.studydocs.response.BaseResponse;
 import com.mobile.studydocs.service.DocumentService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -59,4 +62,45 @@ public class UserDocumentController {
         documentService.unlikeDocument(documentId, userId);
         return ResponseEntity.ok(new BaseResponse(HttpStatus.OK.value(), "Bỏ thích tài liệu thành công", true));
     }
+    @GetMapping( "/getDocSaveInLibrary")
+    public ResponseEntity<BaseResponse> getDocSaveInLibrary(@RequestParam("userId") String userid ){
+
+        SearchDTO searchDTO = documentService.getDocSaveInLibrary(userid);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
+    }
+    @GetMapping( "/saveToLibrary")
+    public ResponseEntity<BaseResponse> saveDocument(@RequestParam("keyword") String idDocument,@RequestAttribute("userId") String userid ){
+        boolean success = documentService.saveToLibrary(idDocument,userid);
+        System.out.println("save doc: "+idDocument);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", success));
+    }
+    // ===== hao lam phần này (upload document + file) =====
+    /**
+     * Upload document metadata + file to Firebase Storage and Firestore
+     */
+    @PostMapping("/upload")
+    public ResponseEntity<BaseResponse> uploadDocument(
+            @RequestPart("document") Document document,
+            @RequestPart("file") MultipartFile file,
+            @RequestAttribute("userId")String userId) {
+        try {
+            Document savedDoc = documentService.uploadDocument(document, file,userId);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new BaseResponse(HttpStatus.OK.value(), "Upload tài liệu thành công", savedDoc));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new BaseResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi upload tài liệu", null));
+        }
+    }
+    // ===== end hao lam phần này =====
+    // ===== phần này của Hảo =====
+    @GetMapping("/my-documents")
+    public BaseResponse getMyDocuments(@RequestParam("userId") String userId) {
+        SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
+        return new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu thành công", searchDTO);
+    }
+    // ===== end phần này của Hảo =====
 }

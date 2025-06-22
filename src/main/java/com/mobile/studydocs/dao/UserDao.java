@@ -36,13 +36,11 @@ public class UserDao {
      * @param userId UID của người dùng (lấy từ Firebase)
      * @param fullName Họ tên mới
      * @param avatarUrl Ảnh đại diện mới
-     * @param email Email mới
      */
-    public void updateUserInFirestore(String userId, String fullName, String avatarUrl, String email) {
+    public void updateUserInFirestore(String userId, String fullName, String avatarUrl) {
         firestore.collection("users").document(userId)
                 .update("fullName", fullName,
-                        "avatarUrl", avatarUrl,
-                        "email", email);
+                        "avatarUrl", avatarUrl);
     }
 
     public void addFcmToken(String userId, String fcmToken) {

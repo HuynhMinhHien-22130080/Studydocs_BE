@@ -75,47 +75,7 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
-    @GetMapping( "/getDocSaveInLibrary")
-    public ResponseEntity<BaseResponse> getDocSaveInLibrary(@RequestParam("userId") String userid ){
 
-        SearchDTO searchDTO = documentService.getDocSaveInLibrary(userid);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
-    }
-    @GetMapping( "/saveToLibrary")
-    public ResponseEntity<BaseResponse> saveDocument(@RequestParam("keyword") String idDocument,@RequestAttribute("userId") String userid ){
-        boolean success = documentService.saveToLibrary(idDocument,userid);
-        System.out.println("save doc: "+idDocument);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", success));
-    }
-    // ===== hao lam phần này (upload document + file) =====
-    /**
-     * Upload document metadata + file to Firebase Storage and Firestore
-     */
-    @PostMapping("/upload")
-    public ResponseEntity<BaseResponse> uploadDocument(
-            @RequestPart("document") Document document,
-            @RequestPart("file") MultipartFile file,
-            @RequestAttribute("userId")String userId) {
-        try {
-            Document savedDoc = documentService.uploadDocument(document, file,userId);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(new BaseResponse(HttpStatus.OK.value(), "Upload tài liệu thành công", savedDoc));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new BaseResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi upload tài liệu", null));
-        }
-    }
-    // ===== end hao lam phần này =====
-    // ===== phần này của Hảo =====
-    @GetMapping("/my-documents")
-    public BaseResponse getMyDocuments(@RequestParam("userId") String userId) {
-        SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
-        return new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu thành công", searchDTO);
-    }
-    // ===== end phần này của Hảo =====
     @GetMapping("/detail/{documentId}")
     public ResponseEntity<BaseResponse> getDocumentDetail(@PathVariable String documentId) {
         var optionalDoc = documentService.getDocumentById(documentId);

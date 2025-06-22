@@ -17,8 +17,8 @@ import java.util.List;
 public class FollowService {
     private final FollowDao followerDao;
 
-    public FollowingResponse addFollower(String userId, FollowRequest followRequest) {
-        return followerDao.addFollower(userId, followRequest.type(), followRequest.targetId());
+    public void addFollower(String userId, FollowRequest followRequest) {
+        followerDao.addFollower(userId, followRequest.type(), followRequest.targetId());
     }
 
     public String removeFollower(String userId, String followingId) {
