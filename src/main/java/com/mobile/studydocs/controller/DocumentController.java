@@ -76,7 +76,7 @@ public class DocumentController {
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
     @GetMapping( "/getDocSaveInLibrary")
-    public ResponseEntity<BaseResponse> getDocSaveInLibrary(@RequestParam("userId") String userid ){
+    public ResponseEntity<BaseResponse> getDocSaveInLibrary(@RequestAttribute("userId") String userid ){
 
         SearchDTO searchDTO = documentService.getDocSaveInLibrary(userid);
 
@@ -111,7 +111,7 @@ public class DocumentController {
     // ===== end hao lam phần này =====
     // ===== phần này của Hảo =====
     @GetMapping("/my-documents")
-    public BaseResponse getMyDocuments(@RequestParam("userId") String userId) {
+    public BaseResponse getMyDocuments(@RequestAttribute("userId") String userId) {
         SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
         return new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu thành công", searchDTO);
     }
