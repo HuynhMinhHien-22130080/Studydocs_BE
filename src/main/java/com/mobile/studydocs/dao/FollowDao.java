@@ -175,13 +175,14 @@ public class FollowDao {
         }
     }
 
-    public List<String> getFCMTokensForUser(String userId, String targetId, String targetType) {
+    public List<String> getFCMTokensForUser(String userId, String targetId, FollowType targetType) {
         try {
             DocumentReference userRef = firestore.collection(USERS_COLLECTION)
                     .document(userId);
+            DocumentReference targetRef = firestore.collection(targetType.getValue()).document(targetId);
+
             if (!userRef.collection(FOLLOWINGS_COLLECTION)
-                    .whereEqualTo("targetId", targetId)
-                    .whereEqualTo("targetType", targetType)
+                    .whereEqualTo("targetRef", targetRef)
                     .whereEqualTo("notifyEnable", true)
                     .get().get().isEmpty()) {
                 return Objects.requireNonNull(userRef.get().get().toObject(User.class)).getFcmTokens();
@@ -202,10 +203,11 @@ public class FollowDao {
                 .orElse(null);
     }
 
-    public Map<String, List<String>> getFCMTokens(String targetId, String targetType) {
+    public Map<String, List<String>> getFCMTokens(String targetId, FollowType targetType) {
         try {
             String followerId = targetType + "-" + targetId;
-            Follower follower = firestore.collection(FOLLOWERS_COLLECTION).document(followerId).get().get().toObject(Follower.class);
+            Follower follower = firestore.collection(FOLLOWERS_COLLECTION)
+                    .document(followerId).get().get().toObject(Follower.class);
             if (follower == null) {
                 throw new ResourceNotFoundException("Người theo dõi", "targetId", targetId);
             }
@@ -214,7 +216,7 @@ public class FollowDao {
                 if (followerRef != null) {
                     DocumentSnapshot docSnap = followerRef.get().get();
                     if (docSnap.exists()) {
-                        result.put(docSnap.getId(), getFCMTokensForUser(docSnap.getId(), targetId, targetType.toString()));
+                        result.put(docSnap.getId(), getFCMTokensForUser(docSnap.getId(), targetId, targetType));
                     }
                 }
             }
