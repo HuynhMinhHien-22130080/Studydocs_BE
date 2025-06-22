@@ -25,8 +25,8 @@ public class FollowController {
     }
 
     @PostMapping("/unfollow")
-    public BaseResponse unFollow(@RequestAttribute("userId") String userId, @RequestBody UnfollowRequest unfollowRequest) {
-        return new BaseResponse(HttpStatus.OK.value(), "Hủy Theo dõi thành công", followService.removeFollower(userId, unfollowRequest.followingId()));
+    public BaseResponse unFollow(@RequestAttribute("userId") String userId, @RequestBody String followingId) {
+        return new BaseResponse(HttpStatus.OK.value(), "Hủy Theo dõi thành công", followService.removeFollower(userId, followingId));
     }
 
     @PostMapping("/unfollow/by-target")
@@ -55,4 +55,3 @@ public class FollowController {
 
 
 }
-
