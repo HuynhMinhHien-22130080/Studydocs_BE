@@ -88,14 +88,13 @@ public class FollowDao {
      * Helper method để cập nhật danh sách followers
      */
     private DocumentReference addFollowerList(String targetId, String targetType, DocumentReference followerRef) {
+        String docId = targetType + "-" + targetId;
+        DocumentReference docRef = firestore.collection(FOLLOWERS_COLLECTION).document(docId);
+
         try {
-            DocumentSnapshot documentSnapshot = firestore.collection(FOLLOWERS_COLLECTION)
-                    .document(targetType + "-" + targetId)
-                    .get()
-                    .get();
+            DocumentSnapshot documentSnapshot = docRef.get().get();
             if (documentSnapshot.exists()) {
-                documentSnapshot.getReference().update("followerRefs", FieldValue.arrayUnion(followerRef));
-                return documentSnapshot.getReference();
+                docRef.update("followerRefs", FieldValue.arrayUnion(followerRef));
             } else {
                 Map<String, Object> data = new HashMap<>();
                 data.put("targetId", targetId);
@@ -103,13 +102,12 @@ public class FollowDao {
                 List<DocumentReference> followers = new ArrayList<>();
                 followers.add(followerRef);
                 data.put("followerRefs", followers);
-                DocumentReference newDocRef = firestore.collection(FOLLOWERS_COLLECTION).document(targetType + "-" + targetId);
-                newDocRef.set(data);
-                return newDocRef;
+                docRef.set(data).get();
             }
+            return docRef;
         } catch (Exception e) {
-            log.error(e.getMessage());
-            return null;
+            log.error("❌ Lỗi khi tạo/cập nhật followers/{}: {}", docId, e.getMessage(), e);
+            throw new RuntimeException("Không thể tạo hoặc cập nhật followers list", e);
         }
     }
 
