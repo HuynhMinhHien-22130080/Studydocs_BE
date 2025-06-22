@@ -49,4 +49,11 @@ public class FollowService {
         return followerDao.getFCMTokens(userId, targetId, targetType);
     }
 
+    public void removeFollowerByTarget(String userId, FollowRequest unfollowRequest) {
+        String followingId = followerDao.getFollowingId(userId, unfollowRequest.targetId(), unfollowRequest.type());
+        followerDao.removeFollower(userId, followingId);
+        if (followingId == null) {
+            throw new IllegalArgumentException("Không tìm thấy following với targetId: " + unfollowRequest.targetId());
+        }
+    }
 }

@@ -219,4 +219,13 @@ public class FollowDao {
         return Collections.emptyList();
     }
 
+    public String getFollowingId(String userId, String targetId, FollowType type) {
+        List<FollowingResponse> followingResponses = getFollowings(userId);
+        return followingResponses.stream()
+                .filter(f -> f.targetId().equals(targetId) && f.targetType() == type)
+                .map(FollowingResponse::followingId)
+                .findFirst()
+                .orElse(null);
+    }
+
 }
