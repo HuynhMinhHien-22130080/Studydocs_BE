@@ -33,7 +33,6 @@ public class UserDocumentController {
     }
 
 
-
     @GetMapping("/download/{documentId}")
     public ResponseEntity<BaseResponse> getDownloadUrl(@PathVariable String documentId, @RequestAttribute("userId") String userId) {
         Optional<DocumentDTO> dto = documentService.getDocumentById(documentId);
@@ -62,22 +61,25 @@ public class UserDocumentController {
         documentService.unlikeDocument(documentId, userId);
         return ResponseEntity.ok(new BaseResponse(HttpStatus.OK.value(), "Bỏ thích tài liệu thành công", true));
     }
-    @GetMapping( "/getDocSaveInLibrary")
-    public ResponseEntity<BaseResponse> getDocSaveInLibrary(@RequestParam("userId") String userid ){
+
+    @GetMapping("/getDocSaveInLibrary")
+    public ResponseEntity<BaseResponse> getDocSaveInLibrary(@RequestParam("userId") String userid) {
 
         SearchDTO searchDTO = documentService.getDocSaveInLibrary(userid);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
-    @GetMapping( "/saveToLibrary")
-    public ResponseEntity<BaseResponse> saveDocument(@RequestParam("keyword") String idDocument,@RequestAttribute("userId") String userid ){
-        boolean success = documentService.saveToLibrary(idDocument,userid);
-        System.out.println("save doc: "+idDocument);
+
+    @GetMapping("/saveToLibrary")
+    public ResponseEntity<BaseResponse> saveDocument(@RequestParam("keyword") String idDocument, @RequestAttribute("userId") String userid) {
+        boolean success = documentService.saveToLibrary(idDocument, userid);
+        System.out.println("save doc: " + idDocument);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", success));
     }
     // ===== hao lam phần này (upload document + file) =====
+
     /**
      * Upload document metadata + file to Firebase Storage and Firestore
      */
@@ -85,16 +87,12 @@ public class UserDocumentController {
     public ResponseEntity<BaseResponse> uploadDocument(
             @RequestPart("document") Document document,
             @RequestPart("file") MultipartFile file,
-            @RequestAttribute("userId")String userId) {
-        try {
-            Document savedDoc = documentService.uploadDocument(document, file,userId);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(new BaseResponse(HttpStatus.OK.value(), "Upload tài liệu thành công", savedDoc));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new BaseResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi upload tài liệu", null));
-        }
+            @RequestAttribute("userId") String userId) throws Exception {
+        Document savedDoc = documentService.uploadDocument(document, file, userId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Upload tài liệu thành công", savedDoc));
     }
+
     // ===== end hao lam phần này =====
     // ===== phần này của Hảo =====
     @GetMapping("/my-documents")
