@@ -8,7 +8,6 @@ import com.mobile.studydocs.model.dto.DocumentMapper;
 import com.mobile.studydocs.model.dto.SearchDTO;
 import com.mobile.studydocs.model.entity.Document;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
