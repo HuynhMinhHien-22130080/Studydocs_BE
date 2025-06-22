@@ -10,6 +10,6 @@ public class StudydocsApplication {
     private static final Logger logger = LoggerFactory.getLogger(StudydocsApplication.class);
     public static void main(String[] args) {
         SpringApplication.run(StudydocsApplication.class, args);
-        logger.info("✅ StudydocsApplication started successfully!");
+        logger.info("StudydocsApplication started successfully!");
     }
 }
