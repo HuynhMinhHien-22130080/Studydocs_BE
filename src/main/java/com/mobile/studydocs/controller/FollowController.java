@@ -20,7 +20,8 @@ public class FollowController {
 
     @PostMapping("/follow")
     public BaseResponse follow(@RequestAttribute("userId") String userId, @RequestBody FollowRequest followRequest) {
-        return new BaseResponse(HttpStatus.OK.value(), "Theo dõi thành công", followService.addFollower(userId, followRequest));
+        followService.addFollower(userId, followRequest);
+        return new BaseResponse(HttpStatus.OK.value(), "Theo dõi thành công", null);
     }
 
     @PostMapping("/unfollow")
