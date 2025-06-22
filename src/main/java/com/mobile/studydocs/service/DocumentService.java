@@ -155,7 +155,7 @@ public class DocumentService {
     }
 
     public boolean saveToLibrary(String idDocument, String userid) {
-        return documentDao.saveToLibrary(idDocument, userid);
+        return documentDao.saveToLibrary(userid, idDocument);
     }
 
     // ===== hao lam phần này (upload document + file) =====
