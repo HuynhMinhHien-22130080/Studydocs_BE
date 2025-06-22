@@ -204,7 +204,7 @@ Lấy document theo university
 
     public boolean saveToLibrary(String userId, String idDocument) {
         Firestore firestore = FirestoreClient.getFirestore();
-        DocumentReference userDocRef = firestore.collection("user").document(userId);
+        DocumentReference userDocRef = firestore.collection("users").document(userId);
 
         // Thêm document ID vào mảng "save"
         ApiFuture<WriteResult> future = userDocRef.update("save", FieldValue.arrayUnion(idDocument));

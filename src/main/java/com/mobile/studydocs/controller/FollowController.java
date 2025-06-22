@@ -3,6 +3,7 @@ package com.mobile.studydocs.controller;
 import com.mobile.studydocs.model.dto.request.FollowRequest;
 import com.mobile.studydocs.model.dto.request.GetFollowerRequest;
 import com.mobile.studydocs.model.dto.request.ToggleNotifyRequest;
+import com.mobile.studydocs.model.dto.request.UnfollowRequest;
 import com.mobile.studydocs.model.enums.FollowType;
 import com.mobile.studydocs.response.BaseResponse;
 import com.mobile.studydocs.service.FollowService;
@@ -25,8 +26,8 @@ public class FollowController {
     }
 
     @PostMapping("/unfollow")
-    public BaseResponse unFollow(@RequestAttribute("userId") String userId, @RequestBody String followingId) {
-        return new BaseResponse(HttpStatus.OK.value(), "Hủy Theo dõi thành công", followService.removeFollower(userId, followingId));
+    public BaseResponse unFollow(@RequestAttribute("userId") String userId, @RequestBody UnfollowRequest unfollowRequest) {
+        return new BaseResponse(HttpStatus.OK.value(), "Hủy Theo dõi thành công", followService.removeFollower(userId, unfollowRequest.followingId()));
     }
 
     @PostMapping("/unfollow/by-target")
