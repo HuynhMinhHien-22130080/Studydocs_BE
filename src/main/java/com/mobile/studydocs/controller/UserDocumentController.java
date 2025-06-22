@@ -87,7 +87,7 @@ public class UserDocumentController {
     public ResponseEntity<BaseResponse> uploadDocument(
             @RequestPart("document") Document document,
             @RequestPart("file") MultipartFile file,
-            @RequestAttribute("userId") String userId) throws Exception {
+            @RequestAttribute("userId") String userId) {
         Document savedDoc = documentService.uploadDocument(document, file, userId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Upload tài liệu thành công", savedDoc));
