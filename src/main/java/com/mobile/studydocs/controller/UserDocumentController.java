@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/user/document")
+@RequestMapping("/user-document")
 public class UserDocumentController {
 
     private final DocumentService documentService;
@@ -95,10 +95,12 @@ public class UserDocumentController {
 
     // ===== end hao lam phần này =====
     // ===== phần này của Hảo =====
-    @GetMapping("/my-documents")
-    public BaseResponse getMyDocuments(@RequestParam("userId") String userId) {
-        SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
-        return new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu thành công", searchDTO);
-    }
+//    @GetMapping("/my-documents")
+//    public BaseResponse getMyDocuments() {
+////        @RequestParam("userId") String userId
+//        String userId="2Wy0mADO5lXPSRqxXpbCHjSmHV93";
+//        SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
+//        return new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu thành công", searchDTO);
+//    }
     // ===== end phần này của Hảo =====
 }

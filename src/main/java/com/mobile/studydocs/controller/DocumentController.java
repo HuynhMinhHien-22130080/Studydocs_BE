@@ -76,8 +76,9 @@ public class DocumentController {
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
     @GetMapping( "/getDocSaveInLibrary")
-    public ResponseEntity<BaseResponse> getDocSaveInLibrary(@RequestAttribute("userId") String userid ){
-
+    public ResponseEntity<BaseResponse> getDocSaveInLibrary(){
+//        @RequestAttribute("userId") String userid
+        String userid="2Wy0mADO5lXPSRqxXpbCHjSmHV93";
         SearchDTO searchDTO = documentService.getDocSaveInLibrary(userid);
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -110,11 +111,11 @@ public class DocumentController {
     }
     // ===== end hao lam phần này =====
     // ===== phần này của Hảo =====
-    @GetMapping("/my-documents")
-    public BaseResponse getMyDocuments(@RequestAttribute("userId") String userId) {
-        SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
-        return new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu thành công", searchDTO);
-    }
+//    @GetMapping("/my-documents")
+//    public BaseResponse getMyDocuments(@RequestAttribute("userId") String userId) {
+//        SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
+//        return new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu thành công", searchDTO);
+//    }
     // ===== end phần này của Hảo =====
     @GetMapping("/detail/{documentId}")
     public ResponseEntity<BaseResponse> getDocumentDetail(@PathVariable String documentId) {
@@ -127,5 +128,12 @@ public class DocumentController {
                         .body(new BaseResponse(HttpStatus.OK.value(), "Lấy chi tiết tài liệu thành công", dto)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new BaseResponse(HttpStatus.NOT_FOUND.value(), "Tài liệu không tồn tại", null)));
+    }
+    @GetMapping("/my-documents")
+    public BaseResponse getMyDocuments() {
+//        @RequestParam("userId") String userId
+        String userId="2Wy0mADO5lXPSRqxXpbCHjSmHV93";
+        SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
+        return new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu thành công", searchDTO);
     }
 }
