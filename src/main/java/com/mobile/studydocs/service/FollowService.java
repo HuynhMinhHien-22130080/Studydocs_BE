@@ -48,7 +48,7 @@ public class FollowService {
     }
 
     public Map<String, List<String>> getFCMTokensNeedNotify(String targetId, FollowType targetType) {
-        return followerDao.getFCMTokens(targetId, targetType.toString());
+        return followerDao.getFCMTokens(targetId, targetType);
     }
 
     public void removeFollowerByTarget(String userId, FollowRequest unfollowRequest) {
