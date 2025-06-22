@@ -71,7 +71,7 @@ public class UserDocumentController {
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
 
-    @GetMapping("/saveToLibrary")
+    @PostMapping("/saveToLibrary")
     public ResponseEntity<BaseResponse> saveDocument(@RequestParam("keyword") String idDocument, @RequestAttribute("userId") String userid) {
         boolean success = documentService.saveToLibrary(idDocument, userid);
         System.out.println("save doc: " + idDocument);
