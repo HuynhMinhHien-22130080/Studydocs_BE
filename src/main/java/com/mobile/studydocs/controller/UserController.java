@@ -21,7 +21,7 @@ public class UserController {
     }
 
     @PatchMapping("/fcm-token")
-    public ResponseEntity<BaseResponse> addFcmToken(@RequestAttribute("userId") String userId, String fcmToken) {
+    public ResponseEntity<BaseResponse> addFcmToken(@RequestAttribute("userId") String userId, @RequestBody String fcmToken) {
         userService.addFcmToken(userId, fcmToken);
         return ResponseEntity.ok(new BaseResponse(HttpStatus.OK.value(), "Thêm thành công", null));
     }

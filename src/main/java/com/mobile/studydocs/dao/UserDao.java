@@ -46,7 +46,18 @@ public class UserDao {
     }
 
     public void addFcmToken(String userId, String fcmToken) {
+        if (fcmToken == null || fcmToken.trim().isEmpty()) {
+            return;
+        }
         firestore.collection("users").document(userId)
                 .update("fcmTokens", FieldValue.arrayUnion(fcmToken));
+    }
+
+    public void removeFcmToken(String userId, String fcmToken) {
+        if (fcmToken == null || fcmToken.trim().isEmpty()) {
+            return;
+        }
+        firestore.collection("users").document(userId)
+                .update("fcmTokens", FieldValue.arrayRemove(fcmToken));
     }
 }

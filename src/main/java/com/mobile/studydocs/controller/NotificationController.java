@@ -1,9 +1,12 @@
 package com.mobile.studydocs.controller;
 
+import com.mobile.studydocs.event.model.NotificationCreateEvent;
+import com.mobile.studydocs.event.rabbitmq.producer.NotificationEventProducer;
 import com.mobile.studydocs.response.BaseResponse;
 import com.mobile.studydocs.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final NotificationEventProducer notificationEventProducer;
 
 
     @GetMapping

@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import com.google.cloud.Timestamp;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor

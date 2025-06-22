@@ -39,6 +39,10 @@ public class UserService {
     }
 
     public void addFcmToken(String userId, String fcmToken) {
-        userDao.addFcmToken( userId, fcmToken);
+        userDao.addFcmToken(userId, fcmToken);
+    }
+
+    public void removeFcmToken(String userId, String fcmToken) {
+        userDao.removeFcmToken(userId, fcmToken);
     }
 }

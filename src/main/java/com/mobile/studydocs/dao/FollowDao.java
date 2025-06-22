@@ -25,12 +25,15 @@ public class FollowDao {
     private static final String USERS_COLLECTION = "users";
     private final Firestore firestore;
 
-    private FollowingResponse getFollowing(DocumentReference followingRef, DocumentReference targetRef) throws ExecutionException, InterruptedException {
+    private FollowingResponse getFollowing(DocumentReference followingRef, DocumentReference targetRef, FollowType targetType) throws ExecutionException, InterruptedException {
         Following following = followingRef.get().get().toObject(Following.class);
         if (following != null) {
-            DocumentSnapshot targetSnapShot = targetRef.get().get();
-            if (targetSnapShot.exists() && targetSnapShot.getId().equals("users")) {
-                User user = targetSnapShot.toObject(User.class);
+            DocumentSnapshot targetSnapshot = targetRef.get().get();
+            if (!targetSnapshot.exists()) {
+                throw new RuntimeException("Mục tiêu theo dõi không tồn tại");
+            }
+            if (targetType == FollowType.USER) {
+                User user = targetSnapshot.toObject(User.class);
                 assert user != null;
                 return FollowingResponse.builder()
                         .followingId(followingRef.getId())
@@ -63,7 +66,7 @@ public class FollowDao {
                     .notifyEnable(true)
                     .build();
             DocumentReference followingRef = userRef.collection(FOLLOWINGS_COLLECTION).add(following).get();
-            return getFollowing(followingRef, following.getTargetRef());
+            return getFollowing(followingRef, following.getTargetRef(), targetType);
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException("Theo dõi không thành công");

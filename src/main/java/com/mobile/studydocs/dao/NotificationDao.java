@@ -51,14 +51,15 @@ public class NotificationDao {
     }
 
     public void addNotification(String userId, Notification notification) throws ExecutionException, InterruptedException {
-            if (userNotExists(userId)) {
-                throw new RuntimeException("Người dùng không tồn tại");
-            }
-            firestore.collection(USER_COLLECTION)
-                    .document(userId)
-                    .collection(NOTIFICATION_COLLECTION)
-                    .add(notification)
-                    .get();
+        if (userNotExists(userId)) {
+            log.error("Người dùng không tồn tại: {}", userId);
+            return;
+        }
+        firestore.collection(USER_COLLECTION)
+                .document(userId)
+                .collection(NOTIFICATION_COLLECTION)
+                .add(notification)
+                .get();
     }
 
     public void deleteNotification(String userId, String notificationId) throws ExecutionException, InterruptedException {

@@ -6,12 +6,19 @@ import com.mobile.studydocs.event.model.NotificationCreateEvent;
 import com.mobile.studydocs.event.rabbitmq.producer.NotificationEventProducer;
 import com.mobile.studydocs.exception.NotificationNotFound;
 import com.mobile.studydocs.model.entity.Notification;
+import com.mobile.studydocs.model.enums.FollowType;
 import com.mobile.studydocs.model.enums.NotificationType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
@@ -29,18 +36,29 @@ public class NotificationService {
         }
     }
 
-    public void addNotification(String userId, Notification notification) {
+    public void addNotification(List<String> userIdList, Notification notification) {
+        List<String> successfulUserIds = new ArrayList<>();
         try {
-            notificationDao.addNotification(userId, notification);
+            userIdList.forEach(
+                    (userId) -> {
+                        try {
+                            notificationDao.addNotification(userId, notification);
+                            successfulUserIds.add(userId);
+                        } catch (ExecutionException | InterruptedException e) {
+                            log.error(e.getMessage(), e);
+                        }
+                    }
+            );
         } catch (NotificationNotFound e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Không thể thêm thông báo");
         }
         String followType = NotificationType.getFollowType(notification.getType()).toString();
-        List<String> tokens = followService.getFCMTokensNeedNotify(userId, notification.getTargetId(), followType);
+        Map<String, List<String>> tokensByUser = _getMapFcmToken(successfulUserIds, notification.getTargetId(), FollowType.valueOf(followType));
         String senderName = userService.findUserById(notification.getSenderId()).getFullName();
-        notificationEventProducer.publish(new NotificationCreateEvent(tokens, notification.getType(), senderName));
+        System.out.println(tokensByUser);
+        notificationEventProducer.publish(new NotificationCreateEvent(tokensByUser, notification.getType(), senderName));
     }
 
     public void deleteNotification(String userId, String notificationId) {
@@ -78,11 +96,25 @@ public class NotificationService {
 
     public void markAllAsRead(String userId) {
         try {
-             notificationDao.readAllNotification(userId);
+            notificationDao.readAllNotification(userId);
         } catch (NotificationNotFound e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Không thể đánh dấu đã đọc");
         }
+    }
+
+    /**
+     * Lấy mapping theo user và token
+     */
+    private Map<String, List<String>> _getMapFcmToken(List<String> userIdList, String targetId, FollowType followType) {
+        Map<String, List<String>> tokensByUser = new HashMap<>();
+        userIdList.forEach(
+                (userId) -> {
+                    List<String> tokens = followService.getFCMTokensNeedNotify(userId, targetId, followType.toString());
+                    tokensByUser.put(userId, tokens);
+                }
+        );
+        return tokensByUser;
     }
 }
