@@ -1,16 +1,1 @@
-services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"       # Cổng AMQP cho ứng dụng
-      - "15672:15672"     # Giao diện quản lý Web UI
-    environment:
-      RABBITMQ_DEFAULT_USER: root
-      RABBITMQ_DEFAULT_PASS: root
-    networks:
-      - rabbitmq-net
 
-networks:
-  rabbitmq-net:
-    driver: bridge
