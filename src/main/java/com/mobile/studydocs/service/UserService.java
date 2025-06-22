@@ -35,7 +35,6 @@ public class UserService {
         user.setUserId(userId);
         user.setFullName(request.fullName());
         user.setEmail(request.email());
-        user.setFcmTokens(List.of(request.fcmToken()));
         userDao.saveUserToFirestore(user);
     }
 
