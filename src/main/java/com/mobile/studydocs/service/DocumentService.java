@@ -7,6 +7,10 @@ import com.mobile.studydocs.model.dto.DocumentDTO;
 import com.mobile.studydocs.model.dto.DocumentMapper;
 import com.mobile.studydocs.model.dto.SearchDTO;
 import com.mobile.studydocs.model.entity.Document;
+import com.mobile.studydocs.model.entity.Notification;
+import com.mobile.studydocs.model.enums.FollowType;
+import com.mobile.studydocs.model.enums.NotificationType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,14 +21,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DocumentService {
     private final DocumentDao documentDao;
     private final FirebaseStorageService firebaseStorageService;
+    private final NotificationService notificationService;
 
-    public DocumentService(DocumentDao documentDao, FirebaseStorageService firebaseStorageService) {
-        this.documentDao = documentDao;
-        this.firebaseStorageService = firebaseStorageService;
-    }
 
     public SearchDTO searchByTitle(String title) {
         try {
@@ -82,7 +84,7 @@ public class DocumentService {
      */
     public SearchDTO getDocumentsByUserId(String userId) {
         try {
-            List<Document> docs =documentDao.getDocumentsByUserID(userId);
+            List<Document> docs = documentDao.getDocumentsByUserID(userId);
             List<DocumentDTO> dtoList = docs.stream()
                     .map(DocumentMapper::toDTO) // map qua DTO
                     .collect(Collectors.toList());
@@ -154,23 +156,29 @@ public class DocumentService {
     }
 
     public boolean saveToLibrary(String idDocument, String userid) {
-    return documentDao.saveToLibrary(idDocument,userid);
+        return documentDao.saveToLibrary(idDocument, userid);
     }
 
     // ===== hao lam phần này (upload document + file) =====
-    public Document uploadDocument(Document document, MultipartFile file, String userid) throws Exception {
-        // 1. Upload file lên Firebase Storage
-        String fileName = firebaseStorageService.uploadFile(file);
-        document.setFileUrl(fileName);
-        long millis = System.currentTimeMillis();
-        long seconds = millis / 1000;
-        int nanos = (int) ((millis % 1000) * 1_000_000); // phần dư ms chuyển sang nanoseconds
-        document.setCreatedAt(Timestamp.ofTimeSecondsAndNanos(seconds, nanos));
-        document.setIsDelete(false);
-        // 2. Lưu document vào Firestore
-        document.setUserId(userid);
-        documentDao.save(document);
-        return document;
+    public Document uploadDocument(Document document, MultipartFile file, String userid) {
+        try {
+            // 1. Upload file lên Firebase Storage
+            String fileName = firebaseStorageService.uploadFile(file);
+            document.setFileUrl(fileName);
+            long millis = System.currentTimeMillis();
+            long seconds = millis / 1000;
+            int nanos = (int) ((millis % 1000) * 1_000_000); // phần dư ms chuyển sang nanoseconds
+            document.setCreatedAt(Timestamp.ofTimeSecondsAndNanos(seconds, nanos));
+            document.setIsDelete(false);
+            // 2. Lưu document vào Firestore
+            document.setUserId(userid);
+            String documentId = documentDao.save(document);
+            document.setId(documentId);
+            notificationService.addNotification(userid, _createNotification(document, userid));
+            return document;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public SearchDTO getDocSaveInLibrary(String userid) {
@@ -184,5 +192,15 @@ public class DocumentService {
             throw new BusinessException("Error while searching by title", e.getCause());
         }
     }
+
     // ===== end hao lam phần này =====
+    private Notification _createNotification(Document document, String senderId) {
+        return Notification.builder()
+                .senderId(senderId)
+                .type(NotificationType.NEW_POST)
+                .targetId(document.getId())
+                .title(document.getTitle())
+                .message(document.getDescription())
+                .build();
+    }
 }
