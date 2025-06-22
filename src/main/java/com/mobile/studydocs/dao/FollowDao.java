@@ -5,6 +5,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
 //import com.mobile.studydocs.model.dto.response.FollowingResponse;
+import com.mobile.studydocs.exception.ResourceNotFoundException;
 import com.mobile.studydocs.model.dto.response.FollowingResponse;
 import com.mobile.studydocs.model.entity.Follower;
 import com.mobile.studydocs.model.entity.Following;
@@ -26,31 +27,6 @@ public class FollowDao {
     private static final String USERS_COLLECTION = "users";
     private final Firestore firestore;
 
-    private FollowingResponse getFollowing(DocumentReference followingRef, DocumentReference targetRef, FollowType targetType) throws ExecutionException, InterruptedException {
-        Following following = followingRef.get().get().toObject(Following.class);
-        if (following != null) {
-            DocumentSnapshot targetSnapshot = targetRef.get().get();
-            if (!targetSnapshot.exists()) {
-                throw new RuntimeException("Mục tiêu theo dõi không tồn tại");
-            }
-            if (targetType == FollowType.USER) {
-                User user = targetSnapshot.toObject(User.class);
-                assert user != null;
-                return FollowingResponse.builder()
-                        .followingId(followingRef.getId())
-                        .targetType(FollowType.USER)
-                        .avatarUrl(user.getAvatarUrl())
-                        .name(user.getFullName())
-                        .targetId(user.getUserId())
-                        .notifyEnables(following.isNotifyEnable())
-                        .build();
-            } else {
-                throw new RuntimeException("Loại theo dõi không hợp lệ");
-            }
-        } else {
-            throw new RuntimeException("Lỗi khi lấy Following");
-        }
-    }
 
     /**
      * Thêm follow relationship
@@ -201,7 +177,7 @@ public class FollowDao {
         }
     }
 
-    public List<String> getFCMTokens(String userId, String targetId, String targetType) {
+    public List<String> getFCMTokensForUser(String userId, String targetId, String targetType) {
         try {
             DocumentReference userRef = firestore.collection(USERS_COLLECTION)
                     .document(userId);
@@ -226,6 +202,31 @@ public class FollowDao {
                 .map(FollowingResponse::followingId)
                 .findFirst()
                 .orElse(null);
+    }
+
+    public Map<String, List<String>> getFCMTokens(String targetId, String targetType) {
+        try {
+            String followerId = targetType + "-" + targetId;
+            Follower follower = firestore.collection(FOLLOWERS_COLLECTION).document(followerId).get().get().toObject(Follower.class);
+            if (follower == null) {
+                throw new ResourceNotFoundException("Người theo dõi", "targetId", targetId);
+            }
+            Map<String, List<String>> result = new HashMap<>();
+            for (DocumentReference followerRef : follower.getFollowerRefs()) {
+                if (followerRef != null) {
+                    DocumentSnapshot docSnap = followerRef.get().get();
+                    if (docSnap.exists()) {
+                        result.put(docSnap.getId(), getFCMTokensForUser(docSnap.getId(), targetId, targetType.toString()));
+                    }
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            log.error("Error getting followers for target {}:{} - {}",
+                    targetType, targetId, e.getMessage());
+            throw new RuntimeException("Không tìm thấy người theo dõi");
+        }
+
     }
 
 }

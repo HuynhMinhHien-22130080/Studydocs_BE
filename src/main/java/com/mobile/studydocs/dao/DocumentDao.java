@@ -224,7 +224,7 @@ Lấy document theo university
     /**
      * Lưu document mới vào Firestore
      */
-    public void save(Document document) throws Exception {
+    public String save(Document document) throws Exception {
         // Validation với BusinessException
         if (document == null) {
             throw new BusinessException("Document cannot be null", "DOCUMENT_NULL");
@@ -263,10 +263,12 @@ Lấy document theo university
 
         try {
             firestore.collection(DOCUMENTS_COLLECTION).document(docId).set(document).get();
+            return docId;
         } catch (Exception e) {
             throw new BusinessException("Failed to save document: " + e.getMessage(), e);
         }
     }
+
     // ===== end hao lam phần này =====
     public List<Document> getDocSaveInLibrary(String userId) throws ExecutionException, InterruptedException {
         Firestore firestore = FirestoreClient.getFirestore();

@@ -7,10 +7,12 @@ import com.mobile.studydocs.model.dto.request.ToggleNotifyRequest;
 import com.mobile.studydocs.model.dto.response.FollowerResponse;
 import com.mobile.studydocs.model.dto.response.FollowingResponse;
 import com.mobile.studydocs.model.entity.User;
+import com.mobile.studydocs.model.enums.FollowType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -45,8 +47,8 @@ public class FollowService {
         return followerDao.getFollowings(userId);
     }
 
-    public List<String> getFCMTokensNeedNotify(String userId, String targetId, String targetType) {
-        return followerDao.getFCMTokens(userId, targetId, targetType);
+    public Map<String, List<String>> getFCMTokensNeedNotify(String targetId, FollowType targetType) {
+        return followerDao.getFCMTokens(targetId, targetType.toString());
     }
 
     public void removeFollowerByTarget(String userId, FollowRequest unfollowRequest) {
