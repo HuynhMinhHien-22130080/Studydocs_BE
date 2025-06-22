@@ -8,6 +8,7 @@ import com.mobile.studydocs.model.dto.DocumentMapper;
 import com.mobile.studydocs.model.dto.SearchDTO;
 import com.mobile.studydocs.model.entity.Document;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -75,6 +76,23 @@ public class DocumentService {
 
 
     /**
+     * Lấy tất cả tài liệu của một user cụ thể
+     * @param userId ID của user cần lấy tài liệu
+     * @return SearchDTO chứa danh sách tài liệu
+     */
+    public SearchDTO getDocumentsByUserId(String userId) {
+        try {
+            List<Document> docs =documentDao.getDocumentsByUserID(userId);
+            List<DocumentDTO> dtoList = docs.stream()
+                    .map(DocumentMapper::toDTO) // map qua DTO
+                    .collect(Collectors.toList());
+            return new SearchDTO(dtoList);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new BusinessException("Error while getting documents by user ID", e.getCause());
+        }
+    }
+
+    /**
      * Lấy thông tin chi tiết tài liệu theo ID và chuyển thành DTO
      * @param documentId ID của tài liệu cần lấy
      * @return Optional chứa DocumentDTO nếu tồn tại, hoặc empty nếu không
@@ -135,12 +153,12 @@ public class DocumentService {
         }
     }
 
-//    public boolean saveDocument(String idDocument) {
-//    return documentDao.saveDocument(idDocument);
-//    }
+    public boolean saveToLibrary(String idDocument, String userid) {
+    return documentDao.saveToLibrary(idDocument,userid);
+    }
 
     // ===== hao lam phần này (upload document + file) =====
-    public Document uploadDocument(Document document, MultipartFile file) throws Exception {
+    public Document uploadDocument(Document document, MultipartFile file, String userid) throws Exception {
         // 1. Upload file lên Firebase Storage
         String fileName = firebaseStorageService.uploadFile(file);
         document.setFileUrl(fileName);
@@ -150,8 +168,21 @@ public class DocumentService {
         document.setCreatedAt(Timestamp.ofTimeSecondsAndNanos(seconds, nanos));
         document.setIsDelete(false);
         // 2. Lưu document vào Firestore
+        document.setUserId(userid);
         documentDao.save(document);
         return document;
+    }
+
+    public SearchDTO getDocSaveInLibrary(String userid) {
+        try {
+            List<Document> docs = documentDao.getDocSaveInLibrary(userid);
+            List<DocumentDTO> dtos = docs.stream()
+                    .map(DocumentMapper::toDTO)
+                    .toList();
+            return new SearchDTO(dtos);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new BusinessException("Error while searching by title", e.getCause());
+        }
     }
     // ===== end hao lam phần này =====
 }
