@@ -1,9 +1,10 @@
 package com.mobile.studydocs.service;
 
-import com.google.cloud.firestore.Firestore;
-import com.google.firebase.cloud.FirestoreClient;
 import com.mobile.studydocs.dao.UserDao;
 import com.mobile.studydocs.model.dto.request.RegisterRequest;
+import com.mobile.studydocs.model.dto.request.UpdateFcmToken;
+import com.mobile.studydocs.model.dto.request.UpdateUserRequest;
+import com.mobile.studydocs.model.dto.response.UserResponse;
 import com.mobile.studydocs.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,9 @@ public class UserService {
         return userDao.findUserById(userId);
     }
 
-    public void saveUserToFirestore(User user) {
-        Firestore db = FirestoreClient.getFirestore();
-        db.collection("users").document(user.getUserId()).set(user);
+    public UserResponse getById(String userId) {
+        User user = userDao.findUserById(userId);
+        return new UserResponse(user.getFullName(), user.getAvatarUrl(), user.getAvatarUrl());
     }
 
     /**
@@ -38,11 +39,15 @@ public class UserService {
         userDao.saveUserToFirestore(user);
     }
 
-    public void addFcmToken(String userId, String fcmToken) {
-        userDao.addFcmToken(userId, fcmToken);
+    public void addFcmToken(String userId, UpdateFcmToken updateFcmToken) {
+        userDao.addFcmToken(userId, updateFcmToken.fcmToken());
     }
 
     public void removeFcmToken(String userId, String fcmToken) {
         userDao.removeFcmToken(userId, fcmToken);
+    }
+
+    public void updateUser(String userId, UpdateUserRequest updateUserRequest) {
+        userDao.updateUserInFirestore(userId, updateUserRequest.fullName(), updateUserRequest.avatarUrl());
     }
 }

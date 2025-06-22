@@ -55,7 +55,7 @@ public class FollowDao {
     /**
      * Thêm follow relationship
      */
-    public FollowingResponse addFollower(String userId, FollowType targetType, String targetId) {
+    public void addFollower(String userId, FollowType targetType, String targetId) {
         try {
             DocumentReference userRef = firestore.collection(USERS_COLLECTION).document(userId);
             DocumentReference followerRef = addFollowerList(targetId, targetType.toString(), userRef);
@@ -66,8 +66,7 @@ public class FollowDao {
                     .followerRef(followerRef)
                     .notifyEnable(true)
                     .build();
-            DocumentReference followingRef = userRef.collection(FOLLOWINGS_COLLECTION).add(following).get();
-            return getFollowing(followingRef, following.getTargetRef(), targetType);
+            userRef.collection(FOLLOWINGS_COLLECTION).add(following).get();
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException("Theo dõi không thành công");
@@ -218,6 +217,15 @@ public class FollowDao {
                     targetType, targetId, e.getMessage());
         }
         return Collections.emptyList();
+    }
+
+    public String getFollowingId(String userId, String targetId, FollowType type) {
+        List<FollowingResponse> followingResponses = getFollowings(userId);
+        return followingResponses.stream()
+                .filter(f -> f.targetId().equals(targetId) && f.targetType() == type)
+                .map(FollowingResponse::followingId)
+                .findFirst()
+                .orElse(null);
     }
 
 }

@@ -239,8 +239,9 @@ Lấy document theo university
         }
 
         // Tự động tạo ID nếu chưa có
-        String docId = document.getId() != null ? document.getId() : firestore.collection(DOCUMENTS_COLLECTION).document().getId();
-
+        String docId = (document.getId() != null && !document.getId().trim().isEmpty())
+                ? document.getId().trim()
+                : firestore.collection(DOCUMENTS_COLLECTION).document().getId();
         // Kiểm tra trùng lặp với BusinessException
         if (document.getId() != null && firestore.collection(DOCUMENTS_COLLECTION).document(docId).get().get().exists()) {
             throw new BusinessException("Document with ID " + docId + " already exists", "DOCUMENT_ALREADY_EXISTS");

@@ -17,8 +17,8 @@ import java.util.List;
 public class FollowService {
     private final FollowDao followerDao;
 
-    public FollowingResponse addFollower(String userId, FollowRequest followRequest) {
-        return followerDao.addFollower(userId, followRequest.type(), followRequest.targetId());
+    public void addFollower(String userId, FollowRequest followRequest) {
+        followerDao.addFollower(userId, followRequest.type(), followRequest.targetId());
     }
 
     public String removeFollower(String userId, String followingId) {
@@ -49,4 +49,11 @@ public class FollowService {
         return followerDao.getFCMTokens(userId, targetId, targetType);
     }
 
+    public void removeFollowerByTarget(String userId, FollowRequest unfollowRequest) {
+        String followingId = followerDao.getFollowingId(userId, unfollowRequest.targetId(), unfollowRequest.type());
+        followerDao.removeFollower(userId, followingId);
+        if (followingId == null) {
+            throw new IllegalArgumentException("Không tìm thấy following với targetId: " + unfollowRequest.targetId());
+        }
+    }
 }

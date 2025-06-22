@@ -20,13 +20,21 @@ public class FollowController {
 
     @PostMapping("/follow")
     public BaseResponse follow(@RequestAttribute("userId") String userId, @RequestBody FollowRequest followRequest) {
-        return new BaseResponse(HttpStatus.OK.value(), "Theo dõi thành công", followService.addFollower(userId, followRequest));
+        followService.addFollower(userId, followRequest);
+        return new BaseResponse(HttpStatus.OK.value(), "Theo dõi thành công", null);
     }
 
     @PostMapping("/unfollow")
     public BaseResponse unFollow(@RequestAttribute("userId") String userId, @RequestBody String followingId) {
         return new BaseResponse(HttpStatus.OK.value(), "Hủy Theo dõi thành công", followService.removeFollower(userId, followingId));
     }
+
+    @PostMapping("/unfollow/by-target")
+    public BaseResponse unFollowByTarget(@RequestAttribute("userId") String userId, @RequestBody FollowRequest unfollowRequest) {
+        followService.removeFollowerByTarget(userId, unfollowRequest);
+        return new BaseResponse(HttpStatus.OK.value(), "Hủy Theo dõi thành công", null);
+    }
+
 
     @PatchMapping("/follow")
     public BaseResponse toggleNotifyEnable(@RequestAttribute("userId") String userId, @RequestBody ToggleNotifyRequest toggleNotifyRequest) {
