@@ -30,11 +30,11 @@ import com.mobile.studydocs.model.entity.Document;
 @RequestMapping("/document")
 public class DocumentController {
     private final DocumentService documentService;
-    private final Storage storage; // Thêm Storage để xử lý download
-    private final String bucketName;
+
 
     public DocumentController(DocumentService documentService) {
         this.documentService = documentService;
+
     }
 
     @GetMapping( "/searchByTitle")
@@ -75,6 +75,14 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
+    @GetMapping( "/getDocSaveInLibrary")
+    public ResponseEntity<BaseResponse> getDocSaveInLibrary(@RequestParam("userId") String userid ){
+
+        SearchDTO searchDTO = documentService.getDocSaveInLibrary(userid);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
+    }
     @GetMapping( "/saveToLibrary")
     public ResponseEntity<BaseResponse> saveDocument(@RequestParam("keyword") String idDocument,@RequestAttribute("userId") String userid ){
         boolean success = documentService.saveToLibrary(idDocument,userid);
@@ -89,9 +97,10 @@ public class DocumentController {
     @PostMapping("/upload")
     public ResponseEntity<BaseResponse> uploadDocument(
             @RequestPart("document") Document document,
-            @RequestPart("file") MultipartFile file) {
+            @RequestPart("file") MultipartFile file,
+            @RequestAttribute("userId")String userId) {
         try {
-            Document savedDoc = documentService.uploadDocument(document, file);
+            Document savedDoc = documentService.uploadDocument(document, file,userId);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new BaseResponse(HttpStatus.OK.value(), "Upload tài liệu thành công", savedDoc));
         } catch (Exception e) {
@@ -102,7 +111,7 @@ public class DocumentController {
     // ===== end hao lam phần này =====
     // ===== phần này của Hảo =====
     @GetMapping("/my-documents")
-    public BaseResponse getMyDocuments(@RequestAttribute("userId") String userId) {
+    public BaseResponse getMyDocuments(@RequestParam("userId") String userId) {
         SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
         return new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu thành công", searchDTO);
     }
