@@ -272,7 +272,7 @@ Lấy document theo university
     // ===== end hao lam phần này =====
     public List<Document> getDocSaveInLibrary(String userId) throws ExecutionException, InterruptedException {
         Firestore firestore = FirestoreClient.getFirestore();
-        DocumentReference userDocRef = firestore.collection("user").document(userId);
+        DocumentReference userDocRef = firestore.collection("users").document(userId);
 
         // Bước 1: Lấy document user
         ApiFuture<DocumentSnapshot> future = userDocRef.get();
