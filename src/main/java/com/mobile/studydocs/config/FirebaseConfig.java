@@ -14,8 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 
 @Configuration
 public class FirebaseConfig {
@@ -33,10 +32,22 @@ public class FirebaseConfig {
      * @return FirebaseApp đã được khởi tạo
      * @throws IOException nếu có lỗi khi đọc file cấu hình
      */
-    @Bean
-    public FirebaseApp firebaseApp() throws IOException {
-        // Đọc file JSON chứa thông tin xác thực
-        FileInputStream serviceAccount = new FileInputStream(firebaseConfigPath);
+
+        @Bean
+        public FirebaseApp firebaseApp() throws IOException {
+            InputStream serviceAccount;
+
+            String firebaseKeyEnv = System.getenv("FIRE_BASE");
+
+            if (firebaseKeyEnv != null && !firebaseKeyEnv.isEmpty()) {
+                // ✅ Đọc từ biến môi trường FIREBASE_KEY nếu có
+                serviceAccount = new ByteArrayInputStream(firebaseKeyEnv.getBytes());
+            } else if (firebaseConfigPath != null && !firebaseConfigPath.isEmpty()) {
+                // ✅ Nếu không có biến env → dùng file local (dùng khi phát triển)
+                serviceAccount = new FileInputStream(firebaseConfigPath);
+            } else {
+                throw new FileNotFoundException("Firebase credentials not provided via FIREBASE_KEY or firebase.config.path");
+            }
         FirestoreOptions firestoreOptions = FirestoreOptions
                 .newBuilder()
                 .setDatabaseId("studydocs")
