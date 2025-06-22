@@ -64,7 +64,8 @@ public class FollowDao {
             if (following == null) {
                 throw new RuntimeException("Hủy theo dõi không thành công");
             }
-            following.getFollowerRef().update("followerRefs", FieldValue.arrayUnion(followingRef));
+           DocumentReference userRef = firestore.collection(USERS_COLLECTION).document(userId);
+            following.getFollowerRef().update("followerRefs", FieldValue.arrayRemove(userRef));
             followingRef.delete();
         } catch (Exception e) {
             log.error(e.getMessage());
