@@ -31,8 +31,10 @@ import com.mobile.studydocs.model.entity.Document;
 public class DocumentController {
     private final DocumentService documentService;
 
+
     public DocumentController(DocumentService documentService) {
         this.documentService = documentService;
+
     }
 
     @GetMapping( "/searchByTitle")
@@ -53,6 +55,18 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
+
+    /**
+     * Lấy tất cả tài liệu của một user cụ thể
+     * @param userId ID của user cần lấy tài liệu
+     * @return BaseResponse chứa danh sách tài liệu
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<BaseResponse> getDocumentsByUserId(@PathVariable String userId) {
+        SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu của user thành công", searchDTO));
+    }
     @GetMapping( "/getAllDocument")
     public ResponseEntity<BaseResponse> getAll(){
         System.out.println("da gui request lay tat ca doc");
@@ -61,13 +75,21 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
     }
-//    @GetMapping( "/saveDocument")
-//    public ResponseEntity<BaseResponse> saveDocument(@RequestParam("keyword") String idDocument ){
-//        boolean success = documentService.saveDocument(idDocument);
-//        System.out.println("save doc: "+idDocument);
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", success));
-//    }
+    @GetMapping( "/getDocSaveInLibrary")
+    public ResponseEntity<BaseResponse> getDocSaveInLibrary(@RequestParam("userId") String userid ){
+
+        SearchDTO searchDTO = documentService.getDocSaveInLibrary(userid);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", searchDTO));
+    }
+    @GetMapping( "/saveToLibrary")
+    public ResponseEntity<BaseResponse> saveDocument(@RequestParam("keyword") String idDocument,@RequestAttribute("userId") String userid ){
+        boolean success = documentService.saveToLibrary(idDocument,userid);
+        System.out.println("save doc: "+idDocument);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách thành công", success));
+    }
     // ===== hao lam phần này (upload document + file) =====
     /**
      * Upload document metadata + file to Firebase Storage and Firestore
@@ -75,9 +97,10 @@ public class DocumentController {
     @PostMapping("/upload")
     public ResponseEntity<BaseResponse> uploadDocument(
             @RequestPart("document") Document document,
-            @RequestPart("file") MultipartFile file) {
+            @RequestPart("file") MultipartFile file,
+            @RequestAttribute("userId")String userId) {
         try {
-            Document savedDoc = documentService.uploadDocument(document, file);
+            Document savedDoc = documentService.uploadDocument(document, file,userId);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new BaseResponse(HttpStatus.OK.value(), "Upload tài liệu thành công", savedDoc));
         } catch (Exception e) {
@@ -86,6 +109,13 @@ public class DocumentController {
         }
     }
     // ===== end hao lam phần này =====
+    // ===== phần này của Hảo =====
+    @GetMapping("/my-documents")
+    public BaseResponse getMyDocuments(@RequestParam("userId") String userId) {
+        SearchDTO searchDTO = documentService.getDocumentsByUserId(userId);
+        return new BaseResponse(HttpStatus.OK.value(), "Lấy danh sách tài liệu thành công", searchDTO);
+    }
+    // ===== end phần này của Hảo =====
     @GetMapping("/detail/{documentId}")
     public ResponseEntity<BaseResponse> getDocumentDetail(@PathVariable String documentId) {
         var optionalDoc = documentService.getDocumentById(documentId);

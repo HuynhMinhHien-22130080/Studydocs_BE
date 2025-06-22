@@ -7,6 +7,7 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import com.mobile.studydocs.model.dto.DocumentDTO;
 import com.mobile.studydocs.model.dto.SearchDTO;
 import com.mobile.studydocs.model.entity.Document;
 import org.springframework.stereotype.Component;
@@ -201,9 +202,22 @@ Lấy document theo university
         return future.get() != null;
     }
 
-    public boolean saveDocument(String idDocument) {
-        return false;
+    public boolean saveToLibrary(String userId, String idDocument) {
+        Firestore firestore = FirestoreClient.getFirestore();
+        DocumentReference userDocRef = firestore.collection("user").document(userId);
+
+        // Thêm document ID vào mảng "save"
+        ApiFuture<WriteResult> future = userDocRef.update("save", FieldValue.arrayUnion(idDocument));
+
+        try {
+            future.get(); // Chờ thao tác hoàn tất (có thể bỏ nếu không cần đồng bộ)
+            return true;
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
+
 
     // ===== hao lam phần này (upload document + file) =====
 
@@ -253,4 +267,40 @@ Lấy document theo university
         }
     }
     // ===== end hao lam phần này =====
+    public List<Document> getDocSaveInLibrary(String userId) throws ExecutionException, InterruptedException {
+        Firestore firestore = FirestoreClient.getFirestore();
+        DocumentReference userDocRef = firestore.collection("user").document(userId);
+
+        // Bước 1: Lấy document user
+        ApiFuture<DocumentSnapshot> future = userDocRef.get();
+        DocumentSnapshot userSnapshot = future.get();
+
+        List<Document> savedDocuments = new ArrayList<>();
+
+        if (userSnapshot.exists()) {
+            // Bước 2: Lấy danh sách documentId trong field 'save'
+            List<String> savedDocIds = (List<String>) userSnapshot.get("save");
+
+            if (savedDocIds != null && !savedDocIds.isEmpty()) {
+                CollectionReference docRef = firestore.collection("documents");
+
+                // Bước 3: Với mỗi documentId, lấy document tương ứng
+                for (String docId : savedDocIds) {
+                    DocumentReference documentReference = docRef.document(docId);
+                    ApiFuture<DocumentSnapshot> docFuture = documentReference.get();
+                    DocumentSnapshot docSnapshot = docFuture.get();
+
+                    if (docSnapshot.exists()) {
+                        // Map DocumentSnapshot về đối tượng Document tùy theo class bạn định nghĩa
+                        Document document = docSnapshot.toObject(Document.class);
+                        savedDocuments.add(document);
+                    }
+                }
+            }
+        }
+
+        return savedDocuments;
+    }
+
+
 }
